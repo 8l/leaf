@@ -5,10 +5,9 @@ import (
 	"fmt"
 	"io"
 
-	"e8vm.net/e8/text/runes"
-	"e8vm.net/e8/text/scanner"
-
 	"e8vm.net/leaf/comperr"
+	"e8vm.net/leaf/runes"
+	"e8vm.net/leaf/scanner"
 	"e8vm.net/leaf/token"
 )
 
