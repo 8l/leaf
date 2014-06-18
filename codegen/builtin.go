@@ -1,9 +1,7 @@
 package codegen
 
 var (
-	VoidType = &BasicType{"void", Void}
-
-	PtrType    = &BasicType{"ptr", Ptr}
+	VoidType   = &BasicType{"void", Void}
 	UintType   = &BasicType{"uint", Uint32}
 	IntType    = &BasicType{"int", Int32}
 	Uint8Type  = &BasicType{"uint8", Uint8}
@@ -13,14 +11,15 @@ var (
 	ByteType   = &BasicType{"byte", Uint8}
 	CharType   = &BasicType{"char", Int8}
 
+	StrType = &NamedType{"string", &PtrType{CharType}}
+
 	fnPrintInt *Func
 	// fnPrintStr *Func
 )
 
-func makeBuiltIn() *SymTable {
-	ret := newSymTable()
+func makeBuiltIn() *SymMap {
+	ret := newSymMap()
 
-	ret.Add(PtrType)
 	ret.Add(UintType, IntType)
 	ret.Add(Uint8Type, Int8Type)
 	ret.Add(Uint32Type, Int32Type)
