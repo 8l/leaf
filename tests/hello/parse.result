@@ -1,0 +1,22 @@
+[main.lf]
++ source-file:
+    + func-decl:
+        - 1:1: func
+        - 1:6: Ident - "main"
+        - 1:10: (
+        - 1:11: )
+        + block-stmt:
+            - 1:13: {
+            + expr-stmt:
+                + expr:
+                    + call-expr:
+                        + operand:
+                            - 2:5: Ident - "printStr"
+                        - 2:13: (
+                        + expr:
+                            + operand:
+                                - 2:14: String - "\"hello, world.\\n\""
+                        - 2:31: )
+                - 3:0: ;
+            - 3:1: }
+        - 4:0: ;

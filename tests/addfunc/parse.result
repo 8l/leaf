@@ -1,0 +1,51 @@
+[main.lf]
++ source-file:
+    + func-decl:
+        - 1:1: func
+        - 1:6: Ident - "add"
+        - 1:9: (
+        - 1:10: Ident - "a"
+        - 1:11: ,
+        - 1:13: Ident - "b"
+        - 1:15: Ident - "int"
+        - 1:18: )
+        - 1:20: Ident - "int"
+        - 1:24: {
+        - 2:5: return
+        - 2:12: Ident - "a"
+        - 2:14: +
+        - 2:16: Ident - "b"
+        - 3:0: ;
+    + error-decl:
+        - 3:1: }
+        - 4:0: ;
+    + func-decl:
+        - 5:1: func
+        - 5:6: Ident - "main"
+        - 5:10: (
+        - 5:11: )
+        + block-stmt:
+            - 5:13: {
+            + expr-stmt:
+                + expr:
+                    + call-expr:
+                        + operand:
+                            - 6:5: Ident - "print"
+                        - 6:10: (
+                        + expr:
+                            + call-expr:
+                                + operand:
+                                    - 6:11: Ident - "add"
+                                - 6:14: (
+                                + expr:
+                                    + operand:
+                                        - 6:15: Int - "40"
+                                - 6:17: ,
+                                + expr:
+                                    + operand:
+                                        - 6:19: Int - "2"
+                                - 6:20: )
+                        - 6:21: )
+                - 7:0: ;
+            - 7:1: }
+        - 8:0: ;

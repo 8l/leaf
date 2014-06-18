@@ -1,0 +1,17 @@
+[main.lf]
+main.lf:1:1: func
+main.lf:1:6: Ident - "main"
+main.lf:1:10: (
+main.lf:1:11: )
+main.lf:1:13: {
+main.lf:3:1: }
+main.lf:4:0: ;
+main.lf:5:1: func
+main.lf:5:6: Ident - "empty"
+main.lf:5:11: (
+main.lf:5:12: )
+main.lf:5:14: {
+main.lf:6:5: Comment - "// another empty function"
+main.lf:7:1: }
+main.lf:7:1: ;
+main.lf:7:1: EOF

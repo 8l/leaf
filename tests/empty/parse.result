@@ -1,0 +1,20 @@
+[main.lf]
++ source-file:
+    + func-decl:
+        - 1:1: func
+        - 1:6: Ident - "main"
+        - 1:10: (
+        - 1:11: )
+        + block-stmt:
+            - 1:13: {
+            - 3:1: }
+        - 4:0: ;
+    + func-decl:
+        - 5:1: func
+        - 5:6: Ident - "empty"
+        - 5:11: (
+        - 5:12: )
+        + block-stmt:
+            - 5:14: {
+            - 7:1: }
+        - 7:1: ;

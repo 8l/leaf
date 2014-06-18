@@ -1,0 +1,19 @@
+[main.lf]
+main.lf:1:1: func
+main.lf:1:6: Ident - "main"
+main.lf:1:10: (
+main.lf:1:11: )
+main.lf:1:13: {
+main.lf:2:5: var
+main.lf:2:9: Ident - "ans"
+main.lf:2:13: =
+main.lf:2:15: Int - "43"
+main.lf:3:0: ;
+main.lf:3:5: Ident - "print"
+main.lf:3:10: (
+main.lf:3:11: Ident - "ans"
+main.lf:3:14: )
+main.lf:4:0: ;
+main.lf:4:1: }
+main.lf:5:0: ;
+main.lf:5:0: EOF
