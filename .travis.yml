@@ -1,0 +1,11 @@
+language: go
+
+go:
+    - 1.2
+    - tip
+
+install:
+    - go get e8vm.net/leaf
+
+script:
+    - go test e8vm.net/leaf/...
