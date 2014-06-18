@@ -1,0 +1,71 @@
+func parseImport(b *Builder) {
+	if b.AheadIs(t.Import) {
+		d := new Import()
+		b.PushData("importDecl", d)
+		b.Accept()
+
+		if b.Ahead(t.Ident) {
+			d.Name = b.Accept()
+		} else if b.Ahead(t.Dot) {
+			d.Name = b.Accept()
+		}
+
+		if b.Ahead(t.String) {
+			d.Path = b.Accept()
+			if !b.AcceptToken(t.Semi) {
+				b.ExpectToken(t.Semi)
+				b.Until(t.Semi)
+			}
+		} else {
+			b.Expect("import spec")
+			b.Until(t.Semi)
+		}
+
+		b.Pop()
+	} else {
+		b.ExpectToken(t.Import)
+		b.Until(t.Semi)
+	}
+}
+
+func parseFunc(b *Builder) {
+	if b.Ahead(t.Func) {
+		d := new Func()
+		b.PushData("func", d)
+		b.Accept()
+
+		if b.Ahead(t.Ident) {
+			d.Name = b.Accept()
+
+			if b.Ahead(t.Lparen) { 
+				parseFuncArgs(b)
+			} else {
+				b.ExpectToken(t.Lparen)
+				b.Until(t.Semi)
+			}
+		} else {
+			b.Expect("function name")
+			b.Until(t.Semi)
+		}
+	}
+}
+
+// fundamentally, we need automa builder
+// that is readable
+func buildImport(builder) {
+	if builder.Match(import, string) {
+		node := builder.Node(ImportDecl)
+		node.Expect(import, string, semi)
+	} else if builder.Match(import, ident) {
+		node := builder.Node(NamedImportDecl)
+		node.Expect(import, ident, string, semi)
+	} else if builder.Match(import, dot) {
+		node := builder.Node(IncludeImportDecl)
+		node.Expect(import, dot, string, semi)
+	} else if builder.Match(import) {
+		node := builder.Error(
+		node.Expect(import, string, semi)
+	}
+
+	builder.RecoverOn(semi)
+}
