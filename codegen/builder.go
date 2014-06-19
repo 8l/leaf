@@ -22,6 +22,10 @@ func (self *Builder) AddSource(src *ast.Program) {
 	self.files = append(self.files, src)
 }
 
+func (self *Builder) LoadImports() {
+
+}
+
 // Returns IR code with symbol table
 func (self *Builder) Build() *Archive {
 	/*
@@ -29,7 +33,10 @@ func (self *Builder) Build() *Archive {
 		we will skip this step for 0.1, because 0.1 will only target for 1 single package
 		however, we do need to import the builtin package, the package 0, and add the
 		symbol table of the package into the base of our namespace
+	*/
 
+	self.LoadImports()
+	/*
 		STEP 2: collect symbols
 		for the symbols, we have a tricky case
 		for example, the program might say:

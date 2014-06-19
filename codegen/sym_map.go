@@ -17,15 +17,13 @@ func newSymMap() *symMap {
 
 func symName(sym symbol) string {
 	switch sym := sym.(type) {
-	case *bacicType:
-		return sym.Name
-	case *NamedType:
-		return sym.Name
+	case *namedType:
+		return sym.String()
 	case *function:
 		return sym.Name
 	}
 
-	panic(fmt.Sprintf("bug sym type: %s", reflect.TypeOf(sym).Name))
+	panic(fmt.Sprintf("not a symbol: %s", reflect.TypeOf(sym).Name))
 }
 
 func (self *symMap) add(name string, sym symbol) {
