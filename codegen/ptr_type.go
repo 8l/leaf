@@ -1,10 +1,12 @@
 package codegen
 
 type ptrType struct {
-	Type Type
+	t typ
 }
 
 func (t *ptrType) Size() uint32   { return 4 }
-func (t *ptrType) String() string { return "*" + t.Type.String() }
+func (t *ptrType) String() string { return "*" + t.t.String() }
 
-var _ Type = new(ptrType)
+var _ typ = new(ptrType)
+
+func ptr(t typ) *ptrType { return &ptrType{t} }

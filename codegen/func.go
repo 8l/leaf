@@ -1,27 +1,27 @@
 package codegen
 
 type function struct {
-	Name string
-	Args []*funcArg
-	Ret  Type
-	// Impl // implementation
+	name string
+	args []*funcArg
+	ret  typ
 }
 
 type funcArg struct {
-	Name string
-	Type Type
+	name string
+	typ  typ
 }
 
 func newFunc(name string) *function {
 	ret := new(function)
-	ret.Name = name
+	ret.name = name
+	ret.ret = tpVoid
 	return ret
 }
 
-func (f *function) AddArg(t Type) {
-	f.Args = append(f.Args, &funcArg{Type: t})
+func (f *function) addArg(t typ) {
+	f.args = append(f.args, &funcArg{typ: t})
 }
 
-func (f *function) AddNamedArg(t Type, name string) {
-	f.Args = append(f.Args, &funcArg{Name: name, Type: t})
+func (f *function) addNamedArg(t typ, name string) {
+	f.args = append(f.args, &funcArg{name: name, typ: t})
 }

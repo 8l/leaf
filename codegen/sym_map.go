@@ -20,7 +20,7 @@ func symName(sym symbol) string {
 	case *namedType:
 		return sym.String()
 	case *function:
-		return sym.Name
+		return sym.name
 	}
 
 	panic(fmt.Sprintf("not a symbol: %s", reflect.TypeOf(sym).Name))

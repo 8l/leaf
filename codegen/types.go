@@ -1,6 +1,6 @@
 package codegen
 
-type Type interface {
+type typ interface {
 	Size() uint32
 	String() string
 }

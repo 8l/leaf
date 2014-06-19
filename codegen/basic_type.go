@@ -2,28 +2,30 @@ package codegen
 
 type basicType int
 
-// basic
+// internal basic types
+// you will never be able to reference these types
+// but they exist in the abstract world
 const (
-	Void basicType = iota
-	Int32
-	Uint32
-	Int8
-	Uint8
+	_void basicType = iota
+	_int32
+	_uint32
+	_int8
+	_uint8
 )
 
-var _ Type = Void
+var _ typ = _void
 
 func (b basicType) Size() uint32 {
 	switch b {
-	case Void:
+	case _void:
 		return 0
-	case Int32:
+	case _int32:
 		return 4
-	case Uint32:
+	case _uint32:
 		return 4
-	case Int8:
+	case _int8:
 		return 1
-	case Uint8:
+	case _uint8:
 		return 1
 	default:
 		panic("bug")
@@ -32,22 +34,22 @@ func (b basicType) Size() uint32 {
 
 func (b basicType) String() string {
 	switch b {
-	case Void:
+	case _void:
 		return "<void>"
-	case Int32:
+	case _int32:
 		return "<int32>"
-	case Uint32:
+	case _uint32:
 		return "<uint32>"
-	case Int8:
+	case _int8:
 		return "<int8>"
-	case Uint8:
+	case _uint8:
 		return "<uint8>"
 	default:
 		panic("bug")
 	}
 }
 
-func isBasic(t Type) bool {
+func isBasic(t typ) bool {
 	_, ret := t.(basicType)
 	return ret
 }

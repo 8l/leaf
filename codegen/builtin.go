@@ -1,17 +1,18 @@
 package codegen
 
 var (
-	voidType   = &namedType{"void", Void}
-	uintType   = &namedType{"uint", Uint32}
-	intType    = &namedType{"int", Int32}
-	uint8Type  = &namedType{"uint8", Uint8}
-	int8Type   = &namedType{"int8", Int8}
-	int32Type  = &namedType{"int32", Int32}
-	uint32Type = &namedType{"uint32", Uint32}
-	byteType   = &namedType{"byte", Uint8}
-	charType   = &namedType{"char", Int8}
+	tpVoid   = defType("void", _void)
+	tpUint   = defType("uint", _uint32)
+	tpInt    = defType("int", _int32)
+	tpUint8  = defType("uint8", _uint8)
+	tpInt8   = defType("int8", _int8)
+	tpInt32  = defType("int32", _int32)
+	tpUint32 = defType("uint32", _uint32)
+	tpByte   = defType("byte", _uint8)
+	tpChar   = defType("char", _int8)
 
-	stringType = &namedType{"string", &ptrType{Int8}}
+	tpPtr    = defType("ptr", ptr(_void))
+	tpString = defType("string", ptr(_int8))
 
 	fnPrintInt *function
 	fnPrintStr *function
@@ -20,12 +21,13 @@ var (
 func makeBuiltIn() *symMap {
 	ret := newSymMap()
 
-	ret.Add(uintType, intType)
-	ret.Add(uint8Type, int8Type)
-	ret.Add(uint32Type, int32Type)
-	ret.Add(byteType, charType)
+	ret.Add(tpUint, tpInt)
+	ret.Add(tpUint8, tpInt8)
+	ret.Add(tpUint32, tpInt32)
+	ret.Add(tpByte, tpChar)
 
-	ret.Add(fnPrintInt)
+	ret.Add(fnPrintInt) // printInt
+	ret.Add(fnPrintStr) // printStr
 
 	return ret
 }
@@ -33,15 +35,13 @@ func makeBuiltIn() *symMap {
 func init() {
 	fnPrintInt = func() *function {
 		f := newFunc("printInt")
-		f.Ret = voidType
-		f.AddArg(intType)
+		f.addArg(tpInt)
 		return f
 	}()
 
 	fnPrintStr = func() *function {
 		f := newFunc("printStr")
-		f.Ret = voidType
-		f.AddArg(stringType)
+		f.addArg(tpString)
 		return f
 	}()
 }
