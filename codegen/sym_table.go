@@ -2,8 +2,8 @@ package codegen
 
 type symTable struct {
 	builtIn *symMap
-	imports *symMap
 	tops    *symMap
+	imports *symMap
 
 	scopes []*symMap
 }
@@ -11,8 +11,8 @@ type symTable struct {
 func newSymTable() *symTable {
 	ret := new(symTable)
 	ret.builtIn = builtIn
-	ret.imports = newSymMap()
 	ret.tops = newSymMap()
+	ret.imports = newSymMap()
 
 	return ret
 }
@@ -42,10 +42,15 @@ func (self *symTable) Define(s symbol) symbol {
 	return top.TryAdd(s)
 }
 
+func (self *symTable) Import() symbol {
+	panic("todo")
+}
+
 // Search in the current scope hierarchy for a symbol name
 func (self *symTable) Find(name string) symbol {
 	nscope := len(self.scopes)
 
+	// look in the scopes
 	for i := nscope - 1; i >= 0; i-- {
 		s := self.scopes[i].Get(name)
 		if s != nil {
@@ -53,12 +58,15 @@ func (self *symTable) Find(name string) symbol {
 		}
 	}
 
-	if s := self.tops.Get(name); s != nil {
-		return s
-	}
+	// check the imports
 	if s := self.imports.Get(name); s != nil {
 		return s
 	}
+	// top level symbols?
+	if s := self.tops.Get(name); s != nil {
+		return s
+	}
+	// finally we check built-in
 	if s := self.builtIn.Get(name); s != nil {
 		return s
 	}
