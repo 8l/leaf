@@ -32,6 +32,8 @@ func makeBuiltIn() *symMap {
 	return ret
 }
 
+var builtIn *symMap = makeBuiltIn()
+
 func init() {
 	fnPrintInt = func() *function {
 		f := newFunc("printInt")

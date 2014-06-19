@@ -1,7 +1,7 @@
 package codegen
 
 type symTable struct {
-	builtin *symMap
+	builtIn *symMap
 	imports *symMap
 	tops    *symMap
 
@@ -10,7 +10,7 @@ type symTable struct {
 
 func newSymTable() *symTable {
 	ret := new(symTable)
-	ret.builtin = makeBuiltIn()
+	ret.builtIn = builtIn
 	ret.imports = newSymMap()
 	ret.tops = newSymMap()
 
@@ -59,7 +59,7 @@ func (self *symTable) Find(name string) symbol {
 	if s := self.imports.Get(name); s != nil {
 		return s
 	}
-	if s := self.builtin.Get(name); s != nil {
+	if s := self.builtIn.Get(name); s != nil {
 		return s
 	}
 
