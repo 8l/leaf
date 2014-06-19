@@ -7,11 +7,13 @@ import (
 type Builder struct {
 	packName string
 	files    []*ast.Program
+	table    *symTable
 }
 
 func NewBuilder(name string) *Builder {
 	ret := new(Builder)
 	ret.packName = name
+	ret.table = newSymTable()
 
 	return ret
 }
@@ -20,6 +22,7 @@ func (self *Builder) AddSource(src *ast.Program) {
 	self.files = append(self.files, src)
 }
 
-func (self *Builder) Resolve() {
+// Returns IR code with symbol table
+func (self *Builder) Build() {
 
 }

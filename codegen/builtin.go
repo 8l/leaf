@@ -1,23 +1,23 @@
 package codegen
 
 var (
-	VoidType   = &BasicType{"void", Void}
-	UintType   = &BasicType{"uint", Uint32}
-	IntType    = &BasicType{"int", Int32}
-	Uint8Type  = &BasicType{"uint8", Uint8}
-	Int8Type   = &BasicType{"int8", Int8}
-	Int32Type  = &BasicType{"int32", Int32}
-	Uint32Type = &BasicType{"uint32", Uint32}
-	ByteType   = &BasicType{"byte", Uint8}
-	CharType   = &BasicType{"char", Int8}
+	VoidType   = &bacicType{"void", Void}
+	UintType   = &bacicType{"uint", Uint32}
+	IntType    = &bacicType{"int", Int32}
+	Uint8Type  = &bacicType{"uint8", Uint8}
+	Int8Type   = &bacicType{"int8", Int8}
+	Int32Type  = &bacicType{"int32", Int32}
+	Uint32Type = &bacicType{"uint32", Uint32}
+	ByteType   = &bacicType{"byte", Uint8}
+	CharType   = &bacicType{"char", Int8}
 
 	StrType = &NamedType{"string", &PtrType{CharType}}
 
-	fnPrintInt *Func
+	fnPrintInt *function
 	// fnPrintStr *Func
 )
 
-func makeBuiltIn() *SymMap {
+func makeBuiltIn() *symMap {
 	ret := newSymMap()
 
 	ret.Add(UintType, IntType)
@@ -31,8 +31,8 @@ func makeBuiltIn() *SymMap {
 }
 
 func init() {
-	fnPrintInt = func() *Func {
-		f := NewFunc("printInt")
+	fnPrintInt = func() *function {
+		f := newFunc("printInt")
 		f.Ret = VoidType
 		f.AddArg(IntType)
 		return f

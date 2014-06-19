@@ -4,17 +4,19 @@ type Type interface {
 	String() string
 }
 
-type BasicType struct {
-	Name   string
-	Actual int
+type basic int
+
+type bacicType struct {
+	Name string
+	Type basic
 }
 
-func IsBasic(t Type) bool {
-	_, ret := t.(*BasicType)
+func isBasic(t Type) bool {
+	_, ret := t.(*bacicType)
 	return ret
 }
 
-func (t *BasicType) String() string {
+func (t *bacicType) String() string {
 	return t.Name
 }
 
@@ -41,8 +43,9 @@ func (t *NamedType) String() string {
 	return t.Name
 }
 
+// basic
 const (
-	Void = iota
+	Void basic = iota
 	Int32
 	Uint32
 	Int8

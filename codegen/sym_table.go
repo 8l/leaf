@@ -1,15 +1,15 @@
 package codegen
 
-type SymTable struct {
-	builtin *SymMap
-	imports *SymMap
-	tops    *SymMap
+type symTable struct {
+	builtin *symMap
+	imports *symMap
+	tops    *symMap
 
-	scopes []*SymMap
+	scopes []*symMap
 }
 
-func NewSymTable() *SymTable {
-	ret := new(SymTable)
+func newSymTable() *symTable {
+	ret := new(symTable)
 	ret.builtin = makeBuiltIn()
 	ret.imports = newSymMap()
 	ret.tops = newSymMap()
@@ -17,17 +17,17 @@ func NewSymTable() *SymTable {
 	return ret
 }
 
-func (self *SymTable) EnterScope() {
+func (self *symTable) EnterScope() {
 	self.scopes = append(self.scopes, newSymMap())
 }
 
-func (self *SymTable) ExitScope() {
+func (self *symTable) ExitScope() {
 	nscope := len(self.scopes)
 	assert(nscope > 0)
 	self.scopes = self.scopes[:nscope-1]
 }
 
-func (self *SymTable) top() *SymMap {
+func (self *symTable) top() *symMap {
 	nscope := len(self.scopes)
 	if nscope == 0 {
 		return self.tops // top declares
@@ -37,13 +37,13 @@ func (self *SymTable) top() *SymMap {
 }
 
 // Returns nil on succeed; return the symbol if it is already defined
-func (self *SymTable) Define(s Sym) Sym {
+func (self *symTable) Define(s symbol) symbol {
 	top := self.top()
 	return top.TryAdd(s)
 }
 
 // Search in the current scope hierarchy for a symbol name
-func (self *SymTable) Find(name string) Sym {
+func (self *symTable) Find(name string) symbol {
 	nscope := len(self.scopes)
 
 	for i := nscope - 1; i >= 0; i-- {
