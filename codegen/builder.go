@@ -23,6 +23,7 @@ func (self *Builder) AddSource(src *ast.Program) {
 }
 
 // Returns IR code with symbol table
-func (self *Builder) Build() {
-
+func (self *Builder) Build() (output interface{}) {
+	
+	return nil
 }
