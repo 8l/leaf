@@ -1,13 +1,13 @@
 package parser
 
 import (
+	"errors"
 	"fmt"
 	"io"
 	"os"
 	"strings"
 
 	"e8vm.net/leaf/ast"
-	"e8vm.net/leaf/comperr"
 	"e8vm.net/leaf/lexer"
 	t "e8vm.net/leaf/token"
 )
@@ -106,12 +106,7 @@ func (p *Parser) expecting(s string) {
 }
 
 func (p *Parser) err(s string) {
-	e := new(comperr.Error)
-	e.File = p.filename
-	e.Err = fmt.Errorf("%s", s)
-	e.Line = p.cur.Line
-	e.Col = p.cur.Col
-
+	e := lexer.MakeError(p.cur, errors.New(s))
 	p.errors = append(p.errors, e)
 }
 

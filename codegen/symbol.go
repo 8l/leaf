@@ -1,3 +1,5 @@
 package codegen
 
-type symbol interface{}
+type symbol interface {
+	Name() string
+}

@@ -29,8 +29,18 @@ func New(in io.Reader, filename string) *Lexer {
 	ret := new(Lexer)
 	ret.s = scanner.New(in)
 	ret.buf = new(Token)
+	ret.buf.File = filename
 	ret.filename = filename
 
+	return ret
+}
+
+func MakeError(pos *Token, e error) *comperr.Error {
+	ret := new(comperr.Error)
+	ret.File = pos.File
+	ret.Line = pos.Line
+	ret.Col = pos.Col
+	ret.Err = e
 	return ret
 }
 

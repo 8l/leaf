@@ -1,52 +1,67 @@
 package codegen
 
-import (
-	"fmt"
-	"reflect"
-)
-
 type symMap struct {
-	tab map[string]symbol
+	tab map[string]*symEntry
+}
+
+type symEntry struct {
+	name string
+	kind symKind
+	s    symbol
 }
 
 func newSymMap() *symMap {
 	ret := new(symMap)
-	ret.tab = make(map[string]symbol)
+	ret.tab = make(map[string]*symEntry)
 	return ret
 }
 
-func symName(sym symbol) string {
-	switch sym := sym.(type) {
+func getSymKind(sym symbol) symKind {
+	switch sym.(type) {
 	case *namedType:
-		return sym.String()
+		return symType
 	case *function:
-		return sym.name
+		return symFunc
 	}
 
-	panic(fmt.Sprintf("not a symbol: %s", reflect.TypeOf(sym).Name))
+	panic("not a sym")
 }
 
-func (self *symMap) add(name string, sym symbol) {
-	self.tab[name] = sym
+func (self *symMap) add(name string, kind symKind, sym symbol) {
+	self.tab[name] = &symEntry{name, kind, sym}
+}
+
+func (self *symMap) decl(name string, kind symKind) {
+	self.add(name, kind, nil)
 }
 
 func (self *symMap) Add(syms ...symbol) {
 	for _, sym := range syms {
-		name := symName(sym)
-		self.add(name, sym)
+		name := sym.Name()
+		kind := getSymKind(sym)
+		self.add(name, kind, sym)
 	}
 }
 
-func (self *symMap) TryAdd(sym symbol) symbol {
-	name := symName(sym)
+func (self *symMap) TryAdd(sym symbol) *symEntry {
+	name := sym.Name()
 	s := self.Get(name)
 	if s != nil {
 		return s
 	}
-	self.add(name, sym)
+	self.add(name, getSymKind(sym), sym)
 	return nil
 }
 
-func (self *symMap) Get(name string) symbol {
+func (self *symMap) TryDecl(name string, kind symKind) *symEntry {
+	s := self.Get(name)
+	if s != nil {
+		return s
+	}
+	self.decl(name, kind)
+	return nil
+}
+
+func (self *symMap) Get(name string) *symEntry {
 	return self.tab[name]
 }

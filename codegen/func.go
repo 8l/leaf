@@ -25,3 +25,5 @@ func (f *function) addArg(t typ) {
 func (f *function) addNamedArg(t typ, name string) {
 	f.args = append(f.args, &funcArg{name: name, typ: t})
 }
+
+func (f *function) Name() string { return f.name }

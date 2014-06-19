@@ -36,10 +36,14 @@ func (self *symTable) top() *symMap {
 	return self.scopes[nscope-1]
 }
 
-// Returns nil on succeed; return the symbol if it is already defined
-func (self *symTable) Define(s symbol) symbol {
+// Returns nil on succeed; return the symbol entry if it is already defined
+func (self *symTable) Define(s symbol) *symEntry {
 	top := self.top()
 	return top.TryAdd(s)
+}
+
+func (self *symTable) DeclTop(name string, kind symKind) *symEntry {
+	return self.tops.TryDecl(name, kind)
 }
 
 func (self *symTable) Import() symbol {
@@ -47,7 +51,7 @@ func (self *symTable) Import() symbol {
 }
 
 // Search in the current scope hierarchy for a symbol name
-func (self *symTable) Find(name string) symbol {
+func (self *symTable) Find(name string) *symEntry {
 	nscope := len(self.scopes)
 
 	// look in the scopes

@@ -8,6 +8,7 @@ import (
 
 type Token struct {
 	Token token.Token
+	File  string
 	Line  int
 	Col   int
 	Lit   string
@@ -15,6 +16,7 @@ type Token struct {
 
 func (t *Token) Clone() *Token {
 	ret := new(Token)
+	ret.File = t.File
 	ret.Token = t.Token
 	ret.Line = t.Line
 	ret.Col = t.Col
