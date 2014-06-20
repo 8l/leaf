@@ -3,6 +3,12 @@ package codegen
 type symTable struct {
 	builtIn *symMap
 	tops    *symMap
+
+	// we will swap this with different file import symbols for
+	// different files
+	// when building the imports for each file,
+	// we also need to check that thes imports does not collide
+	// with top decls
 	imports *symMap
 
 	scopes []*symMap
@@ -12,7 +18,6 @@ func newSymTable() *symTable {
 	ret := new(symTable)
 	ret.builtIn = builtIn
 	ret.tops = newSymMap()
-	ret.imports = newSymMap()
 
 	return ret
 }
@@ -62,10 +67,13 @@ func (self *symTable) Find(name string) *symEntry {
 		}
 	}
 
-	// check the imports
-	if s := self.imports.Get(name); s != nil {
-		return s
+	if self.imports != nil {
+		// check the imports
+		if s := self.imports.Get(name); s != nil {
+			return s
+		}
 	}
+
 	// top level symbols?
 	if s := self.tops.Get(name); s != nil {
 		return s

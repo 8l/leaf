@@ -12,6 +12,7 @@ type Builder struct {
 	files    []*ast.Program
 	table    *symTable
 	errors   []error
+	archive  *Archive
 }
 
 func NewBuilder(name string) *Builder {
@@ -28,24 +29,68 @@ func (self *Builder) AddSource(src *ast.Program) {
 
 // Returns IR code with symbol table
 func (self *Builder) Build() (*Archive, []error) {
-	ret := new(Archive)
+	self.archive = new(Archive)
+
+	ret := func() (*Archive, []error) {
+		return self.archive, self.errors
+	}
+	hasErrors := func() bool {
+		return len(self.errors) > 0
+	}
 
 	for _, f := range self.files {
-		self.scanTopDecls(f)
+		self.defineTopDecls(f)
 	}
-	for _, f := range self.files {
-		self.buildFile(ret, f)
+	// might have duplicated declares
+	if hasErrors() {
+		return ret()
 	}
 
-	return ret, nil
+	self.sortTopDecls() // sort decl building order
+	// might have circular delcare dependencies
+	if hasErrors() {
+		return ret()
+	}
+
+	self.buildImports() // build the import symbols for each file context
+	// might have missing imports
+	if hasErrors() {
+		return ret()
+	}
+
+	self.buildConstsAndTypes() // build the declarations (consts, types)
+	if hasErrors() {
+		return ret()
+	}
+
+	self.buildFuncSigs()
+	if hasErrors() {
+		return ret()
+	}
+
+	self.buildFuncsAndVars() // build the function bodies
+	if hasErrors() {
+		return ret()
+	}
+
+	self.buildInit() // determine init sequence
+
+	return ret()
 }
+
+func (self *Builder) sortTopDecls()        {}
+func (self *Builder) buildImports()        {}
+func (self *Builder) buildConstsAndTypes() {}
+func (self *Builder) buildFuncSigs()       {}
+func (self *Builder) buildFuncsAndVars()   {}
+func (self *Builder) buildInit()           {}
 
 func (self *Builder) errorf(t *lexer.Token, f string, args ...interface{}) {
 	e := lexer.MakeError(t, fmt.Errorf(f, args...))
 	self.errors = append(self.errors, e)
 }
 
-func (self *Builder) scanTopDecls(src *ast.Program) {
+func (self *Builder) defineTopDecls(src *ast.Program) {
 	// get a spot
 	for _, decl := range src.Decls {
 		switch decl := decl.(type) {
@@ -66,10 +111,20 @@ func (self *Builder) scanTopDecls(src *ast.Program) {
 		return
 	}
 
-	// sort the decls here
+	// TODO: sort the decls here in resolving order
+
+	// for v0.1, we only have functions, so we can resolve in
+	// whatever order we want
+
+	// first, we resovle the function signatures for the functions
+	// TODO:
+
+	// now we can generate the function body for each function
+	// TODO:
 }
 
 func (self *Builder) buildFile(arch *Archive, src *ast.Program) {
+
 }
 
 /*
