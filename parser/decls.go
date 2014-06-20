@@ -32,7 +32,7 @@ func (p *Parser) parseFunc() *ast.Func {
 		return err()
 	}
 
-	ret.Pos = p.last
+	ret.NameToken = p.last
 	ret.Name = p.last.Lit
 
 	// TODO: parse args and signature

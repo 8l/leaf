@@ -1,38 +1,50 @@
 package codegen
 
-var (
-	tpVoid   = defType("void", _void)
-	tpUint   = defType("uint", _uint32)
-	tpInt    = defType("int", _int32)
-	tpUint8  = defType("uint8", _uint8)
-	tpInt8   = defType("int8", _int8)
-	tpInt32  = defType("int32", _int32)
-	tpUint32 = defType("uint32", _uint32)
-	tpByte   = defType("byte", _uint8)
-	tpChar   = defType("char", _int8)
+import (
+	"e8vm.net/leaf/symbol"
+)
 
-	tpPtr    = defType("ptr", ptr(_void))
-	tpString = defType("string", ptr(_int8))
+func builtInType(name string, t typ) *namedType {
+	return &namedType{name, nil, t}
+}
+
+var (
+	tpVoid   = builtInType("void", _void)
+	tpUint   = builtInType("uint", _uint32)
+	tpInt    = builtInType("int", _int32)
+	tpUint8  = builtInType("uint8", _uint8)
+	tpInt8   = builtInType("int8", _int8)
+	tpInt32  = builtInType("int32", _int32)
+	tpUint32 = builtInType("uint32", _uint32)
+	tpByte   = builtInType("byte", _uint8)
+	tpChar   = builtInType("char", _int8)
+
+	tpPtr    = builtInType("ptr", ptr(_void))
+	tpString = builtInType("string", ptr(_int8))
 
 	fnPrintInt *function
 	fnPrintStr *function
 )
 
-func makeBuiltIn() *symMap {
-	ret := newSymMap()
+func makeBuiltIn() *symbol.Scope {
+	syms := []symbol.Symbol{
+		tpInt, tpUint,
+		tpInt8, tpUint8,
+		tpInt32, tpUint32,
+		tpByte, tpChar,
+		fnPrintInt,
+		fnPrintStr,
+	}
 
-	ret.Add(tpUint, tpInt)
-	ret.Add(tpUint8, tpInt8)
-	ret.Add(tpUint32, tpInt32)
-	ret.Add(tpByte, tpChar)
-
-	ret.Add(fnPrintInt) // printInt
-	ret.Add(fnPrintStr) // printStr
+	ret := symbol.NewScope()
+	for _, s := range syms {
+		ret.Register(s)
+	}
 
 	return ret
 }
 
-var builtIn *symMap = makeBuiltIn()
+var builtIn *symbol.Scope = makeBuiltIn()
 
 func init() {
 	fnPrintInt = func() *function {

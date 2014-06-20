@@ -5,26 +5,27 @@ import (
 
 	"e8vm.net/leaf/ast"
 	"e8vm.net/leaf/lexer"
+	"e8vm.net/leaf/symbol"
 )
 
 type Builder struct {
 	packName string
-	files    []*ast.Program
-	table    *symTable
+	prog     *ast.Program
+	scope    *symbol.Scope // package level symbols
+	table    *symbol.Table
 	errors   []error
 	archive  *Archive
 }
 
-func NewBuilder(name string) *Builder {
+func NewBuilder(p *ast.Program) *Builder {
 	ret := new(Builder)
-	ret.packName = name
-	ret.table = newSymTable()
+	ret.prog = p
+	ret.scope = symbol.NewScope()
+	ret.table = symbol.NewTable()
+	// ret.table.Push(builtin)
+	// ret.table.Push(ret.scope)
 
 	return ret
-}
-
-func (self *Builder) AddSource(src *ast.Program) {
-	self.files = append(self.files, src)
 }
 
 func (self *Builder) errorf(t *lexer.Token, f string, args ...interface{}) {
@@ -40,56 +41,34 @@ func (self *Builder) hasError() bool {
 func (self *Builder) Build() (*Archive, []error) {
 	self.archive = new(Archive)
 
-	self.declare()
-	// self.hookImports()
-	self.buildDependency()
-	self.buildSymbols()
-	self.buildFunctions()
+	self.register()
 
 	return self.archive, self.errors
 }
 
-func (self *Builder) buildDependency() {
-	if self.hasError() {
-		return
-	}
-}
-
-func (self *Builder) buildSymbols() {
-	if self.hasError() {
-		return
-	}
-}
-
-func (self *Builder) buildFunctions() {
-	if self.hasError() {
-		return
-	}
-}
-
 func (self *Builder) _declare(decl ast.Node) {
-	switch decl := decl.(type) {
-	case *ast.Func:
-		declared := self.table.DeclTop(decl.Name, symFunc)
-		if declared != nil {
-			self.errorf(decl.Pos,
-				"%q already declared as a %s",
-				decl.Name, declared.kind,
-			)
-		}
-	default:
-		panic("bug: unknown decl in ast")
-	}
 }
 
-func (self *Builder) declare() {
+func (self *Builder) register() {
 	if self.hasError() {
 		return
 	}
 
-	for _, f := range self.files {
-		for _, decl := range f.Decls {
-			self._declare(decl)
+	for _, decl := range self.prog.Decls {
+		var s symbol.Symbol
+
+		switch decl := decl.(type) {
+		case *ast.Func:
+			s = declType(decl.NameToken)
+		default:
+			panic("bug: unknown decl in ast")
+		}
+
+		pre := self.scope.Register(s)
+		if pre != nil {
+			name := s.Name()
+			self.errorf(s.Token(), "%q already declared", name)
+			self.errorf(pre.Token(), "   %q previously declared here", name)
 		}
 	}
 }

@@ -10,7 +10,7 @@ type Func struct {
 	Ret   *FuncArg
 	Block *Block
 
-	Pos *lexer.Token
+	NameToken *lexer.Token
 }
 
 type FuncArg struct {
