@@ -46,9 +46,6 @@ func (self *Builder) Build() (*Archive, []error) {
 	return self.archive, self.errors
 }
 
-func (self *Builder) _declare(decl ast.Node) {
-}
-
 func (self *Builder) register() {
 	if self.hasError() {
 		return
