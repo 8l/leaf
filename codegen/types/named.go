@@ -1,8 +1,8 @@
 package types
 
 import (
+	"e8vm.net/leaf/codegen/symbol"
 	"e8vm.net/leaf/lexer"
-	"e8vm.net/leaf/symbol"
 )
 
 // Named type serves as an alias for a type.

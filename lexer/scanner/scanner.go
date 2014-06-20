@@ -6,7 +6,7 @@ import (
 	"bytes"
 	"io"
 
-	"e8vm.net/leaf/runes"
+	"e8vm.net/leaf/lexer/runes"
 )
 
 const (

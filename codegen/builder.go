@@ -4,8 +4,8 @@ import (
 	"fmt"
 
 	"e8vm.net/leaf/ast"
+	"e8vm.net/leaf/codegen/symbol"
 	"e8vm.net/leaf/lexer"
-	"e8vm.net/leaf/symbol"
 )
 
 type Builder struct {

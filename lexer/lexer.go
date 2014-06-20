@@ -6,8 +6,8 @@ import (
 	"io"
 
 	"e8vm.net/leaf/comperr"
-	"e8vm.net/leaf/runes"
-	"e8vm.net/leaf/scanner"
+	"e8vm.net/leaf/lexer/runes"
+	"e8vm.net/leaf/lexer/scanner"
 	"e8vm.net/leaf/token"
 )
 

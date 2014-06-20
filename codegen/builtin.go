@@ -1,8 +1,8 @@
 package codegen
 
 import (
-	"e8vm.net/leaf/symbol"
-	"e8vm.net/leaf/types"
+	"e8vm.net/leaf/codegen/symbol"
+	"e8vm.net/leaf/codegen/types"
 )
 
 var (
