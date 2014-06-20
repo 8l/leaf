@@ -7,9 +7,9 @@ import (
 	"os"
 	"strings"
 
-	"e8vm.net/leaf/ast"
 	"e8vm.net/leaf/lexer"
-	t "e8vm.net/leaf/token"
+	t "e8vm.net/leaf/lexer/token"
+	"e8vm.net/leaf/parser/ast"
 )
 
 type Parser struct {

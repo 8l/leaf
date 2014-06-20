@@ -3,7 +3,7 @@ package lexer
 import (
 	"fmt"
 
-	"e8vm.net/leaf/token"
+	"e8vm.net/leaf/lexer/token"
 )
 
 type Token struct {

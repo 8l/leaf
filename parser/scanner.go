@@ -4,7 +4,7 @@ import (
 	"io"
 
 	"e8vm.net/leaf/lexer"
-	t "e8vm.net/leaf/token"
+	t "e8vm.net/leaf/lexer/token"
 )
 
 type scanner struct {

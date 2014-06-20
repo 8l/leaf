@@ -5,7 +5,7 @@ import (
 	"testing"
 
 	"e8vm.net/leaf/lexer"
-	. "e8vm.net/leaf/token"
+	. "e8vm.net/leaf/lexer/token"
 )
 
 type r struct {
