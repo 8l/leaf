@@ -27,7 +27,12 @@ func (self *Builder) AddSource(src *ast.Program) {
 	self.files = append(self.files, src)
 }
 
-func (self *Builder) hasErrors() bool {
+func (self *Builder) errorf(t *lexer.Token, f string, args ...interface{}) {
+	e := lexer.MakeError(t, fmt.Errorf(f, args...))
+	self.errors = append(self.errors, e)
+}
+
+func (self *Builder) hasError() bool {
 	return len(self.errors) > 0
 }
 
@@ -35,50 +40,56 @@ func (self *Builder) hasErrors() bool {
 func (self *Builder) Build() (*Archive, []error) {
 	self.archive = new(Archive)
 
-	for _, f := range self.files {
-		self.defineTopDecls(f)
-	}
-	if self.hasErrors() {
-		return self.archive, self.errors
-	}
+	self.declare()
+	// self.hookImports()
+	self.buildDependency()
+	self.buildSymbols()
+	self.buildFunctions()
 
 	return self.archive, self.errors
 }
 
-func (self *Builder) errorf(t *lexer.Token, f string, args ...interface{}) {
-	e := lexer.MakeError(t, fmt.Errorf(f, args...))
-	self.errors = append(self.errors, e)
+func (self *Builder) buildDependency() {
+	if self.hasError() {
+		return
+	}
 }
 
-func (self *Builder) defineTopDecls(src *ast.Program) {
-	// get a spot
-	for _, decl := range src.Decls {
-		switch decl := decl.(type) {
-		case *ast.Func:
-			defined := self.table.DeclTop(decl.Name, symFunc)
-			if defined != nil {
-				self.errorf(decl.Pos,
-					"%q already declared as a %s",
-					decl.Name, defined.kind,
-				)
-			}
-		default:
-			panic("bug: unknown decl in ast")
-		}
+func (self *Builder) buildSymbols() {
+	if self.hasError() {
+		return
 	}
+}
 
-	if len(self.errors) > 0 {
+func (self *Builder) buildFunctions() {
+	if self.hasError() {
+		return
+	}
+}
+
+func (self *Builder) _declare(decl ast.Node) {
+	switch decl := decl.(type) {
+	case *ast.Func:
+		declared := self.table.DeclTop(decl.Name, symFunc)
+		if declared != nil {
+			self.errorf(decl.Pos,
+				"%q already declared as a %s",
+				decl.Name, declared.kind,
+			)
+		}
+	default:
+		panic("bug: unknown decl in ast")
+	}
+}
+
+func (self *Builder) declare() {
+	if self.hasError() {
 		return
 	}
 
-	// TODO: sort the decls here in resolving order
-
-	// for v0.1, we only have functions, so we can resolve in
-	// whatever order we want
-
-	// first, we resovle the function signatures for the functions
-	// TODO:
-
-	// now we can generate the function body for each function
-	// TODO:
+	for _, f := range self.files {
+		for _, decl := range f.Decls {
+			self._declare(decl)
+		}
+	}
 }
