@@ -59,7 +59,7 @@ func (self *Builder) register() {
 
 		switch decl := decl.(type) {
 		case *ast.Func:
-			s = declType(decl.NameToken)
+			s = newFunc(decl.NameToken)
 		default:
 			panic("bug: unknown decl in ast")
 		}
