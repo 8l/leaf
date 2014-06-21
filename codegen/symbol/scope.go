@@ -27,10 +27,10 @@ func (self *Scope) Register(s Symbol) Symbol {
 }
 
 // Scope the symbols in registered order.
-func (self *Scope) Scope() []Symbol {
-	ret := make([]Symbol, len(self.list))
-	copy(ret, self.list)
-	return ret
+// For simplicity, we just returned the list saved in the struct.
+// The caller should not change the order of this symbol list.
+func (self *Scope) List() []Symbol {
+	return self.list
 }
 
 // Scope the symbols of a kind in registred order

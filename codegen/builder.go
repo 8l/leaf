@@ -9,12 +9,12 @@ import (
 )
 
 type Builder struct {
-	packName string
-	prog     *ast.Program
-	scope    *symbol.Scope // package level symbols
-	table    *symbol.Table
-	errors   []error
-	archive  *Archive
+	prog   *ast.Program
+	scope  *symbol.Scope // package level symbols
+	table  *symbol.Table
+	syms   []symbol.Symbol
+	errors []error
+	object *Object
 }
 
 func NewBuilder(p *ast.Program) *Builder {
@@ -38,12 +38,14 @@ func (self *Builder) hasError() bool {
 }
 
 // Returns IR code with symbol table
-func (self *Builder) Build() (*Archive, []error) {
-	self.archive = new(Archive)
+func (self *Builder) Build() (*Object, []error) {
+	self.object = new(Object)
 
 	self.register()
 
-	return self.archive, self.errors
+	self.syms = self.scope.List() // get a copy of all symbols
+
+	return self.object, self.errors
 }
 
 func (self *Builder) register() {
