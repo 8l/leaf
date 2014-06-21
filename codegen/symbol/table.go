@@ -13,7 +13,7 @@ func (self *Table) PushScope(s *Scope) {
 	self.stack = append(self.stack, s)
 }
 
-func (self *Table) PosScope() {
+func (self *Table) PopScope() {
 	nstack := len(self.stack)
 	if nstack == 0 {
 		panic("bug")
