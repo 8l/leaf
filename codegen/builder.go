@@ -41,17 +41,30 @@ func (self *Builder) hasError() bool {
 func (self *Builder) Build() (*Object, []error) {
 	self.object = new(Object)
 
-	self.register()
+	self.syms = self.register()
 
-	self.syms = self.scope.List() // get a copy of all symbols
+	// now that all the symbols are registered
+	// this is only layout names
+	// self.layout() // TODO: evaluate consts and types,
+	// TODO: we also need to figure out the types of the vars
+	// we could require that a variable must declare a type first here
+	// rather than detecting the type based on the expression
+	// and the function signatures
+
+	self.implement() // function and init implementations
 
 	return self.object, self.errors
 }
 
-func (self *Builder) register() {
+func (self *Builder) implement() {
+
+}
+
+func (self *Builder) register() []symbol.Symbol {
 	if self.hasError() {
-		return
+		return nil
 	}
+	var ret []symbol.Symbol
 
 	for _, decl := range self.prog.Decls {
 		var s symbol.Symbol
@@ -68,6 +81,10 @@ func (self *Builder) register() {
 			name := s.Name()
 			self.errorf(s.Token(), "%q already declared", name)
 			self.errorf(pre.Token(), "   %q previously declared here", name)
+		} else {
+			ret = append(ret, s)
 		}
 	}
+
+	return ret
 }
