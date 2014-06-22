@@ -13,13 +13,13 @@ var (
 func init() {
 	fnPrintInt = func() *function {
 		f := newBuiltInFunc("printInt")
-		f.addArg(types.Int)
+		f.AddArg(types.Int)
 		return f
 	}()
 
 	fnPrintStr = func() *function {
 		f := newBuiltInFunc("printStr")
-		f.addArg(types.String)
+		f.AddArg(types.String)
 		return f
 	}()
 }

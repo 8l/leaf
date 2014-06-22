@@ -145,7 +145,7 @@ func (self *Builder) genIdent(s string) exprs.Expr {
 
 	switch sym := sym.(type) {
 	case *types.Named:
-		ret := new(exprs.Type)
+		ret := new(exprs.TypeCast)
 		ret.Type = sym
 		return ret
 	case *function:

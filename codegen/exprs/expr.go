@@ -32,6 +32,10 @@ type Addr struct {
 
 	/*
 		The address location that can be filled later.
+		For function calling, the address should be replaced with
+		a relative value later.
+		For external linked symbols, the address will be left as
+		unfilled, and will only be filled on linking stage.
 	*/
 	Fill *uint32
 
@@ -39,9 +43,12 @@ type Addr struct {
 		The address location to use when Fill is nill.
 	*/
 	Offset uint32
+
+	ReadOnly bool
 }
 
-type Type struct {
+// can be used as a function for casting type into the target type
+type TypeCast struct {
 	Type types.Type
 }
 
