@@ -2,6 +2,7 @@ package codegen
 
 import (
 	"fmt"
+	"strconv"
 
 	"e8vm.net/leaf/codegen/exprs"
 	"e8vm.net/leaf/codegen/symbol"
@@ -77,7 +78,7 @@ func (self *Builder) gen() {
 }
 
 func (self *Builder) genFunc(f *ast.Func) {
-	// we should probably have an ir here
+	// TODO: we should probably have an ir here
 	// but for now, we will just write the assembly out directly
 	// calling convention:
 	// $30 is return address
@@ -121,23 +122,32 @@ func (self *Builder) genOperand(op *ast.Operand) exprs.Expr {
 	switch t.Token {
 	case token.Ident:
 		return self.genIdent(t.Lit)
+
 	case token.Int:
-		return self.genInt(t.Lit)
+		lit := t.Lit
+		i, e := strconv.ParseInt(lit, 0, 64)
+		if e != nil {
+			self.errorf(t, "illegal integer; %s", e)
+			return exprs.Err
+		}
+
+		ret := new(exprs.Int)
+		ret.Value = i
+		return ret
+
 	default:
 		panic("bug (or todo)")
 	}
 }
 
-func (self *Builder) genInt(lit string) exprs.Expr {
-	panic("todo")
-}
-
 func (self *Builder) genIdent(s string) exprs.Expr {
 	sym := self.table.Get(s)
 
-	switch sym.(type) {
+	switch sym := sym.(type) {
 	case *types.Named:
-		panic("todo") // for doing type cast
+		ret := new(exprs.Type)
+		ret.Type = sym
+		return ret
 	case *function:
 		panic("todo") // this is a named function
 	default:
