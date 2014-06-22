@@ -3,8 +3,11 @@ package codegen
 import (
 	"fmt"
 
+	"e8vm.net/leaf/codegen/exprs"
 	"e8vm.net/leaf/codegen/symbol"
+	"e8vm.net/leaf/codegen/types"
 	"e8vm.net/leaf/lexer"
+	"e8vm.net/leaf/lexer/token"
 	"e8vm.net/leaf/parser/ast"
 )
 
@@ -87,6 +90,7 @@ func (self *Builder) genFunc(f *ast.Func) {
 	self.table.PopScope()
 }
 
+// Generates a block with its own scope
 func (self *Builder) genBlock(b *ast.Block) {
 	scope := symbol.NewScope()
 	self.table.PushScope(scope)
@@ -98,6 +102,7 @@ func (self *Builder) genBlock(b *ast.Block) {
 	self.table.PopScope()
 }
 
+// Generate a statement
 func (self *Builder) genStmt(node ast.Node) {
 	switch stmt := node.(type) {
 	case *ast.EmptyStmt:
@@ -111,16 +116,39 @@ func (self *Builder) genStmt(node ast.Node) {
 	}
 }
 
-// expression result
-// often a location in memory
-// a stack location, or an absolute location
-type ExprResult struct {
+func (self *Builder) genOperand(op *ast.Operand) exprs.Expr {
+	t := op.Token
+	switch t.Token {
+	case token.Ident:
+		return self.genIdent(t.Lit)
+	case token.Int:
+		return self.genInt(t.Lit)
+	default:
+		panic("bug (or todo)")
+	}
 }
 
-func (self *Builder) genExpr(node ast.Node) *ExprResult {
+func (self *Builder) genInt(lit string) exprs.Expr {
+	panic("todo")
+}
+
+func (self *Builder) genIdent(s string) exprs.Expr {
+	sym := self.table.Get(s)
+
+	switch sym.(type) {
+	case *types.Named:
+		panic("todo") // for doing type cast
+	case *function:
+		panic("todo") // this is a named function
+	default:
+		panic("bug (or todo)")
+	}
+}
+
+func (self *Builder) genExpr(node ast.Node) exprs.Expr {
 	switch expr := node.(type) {
 	case *ast.CallExpr:
-		args := make([]*ExprResult, len(expr.Args))
+		args := make([]exprs.Expr, len(expr.Args))
 		for i, arg := range expr.Args {
 			args[i] = self.genExpr(arg)
 		}
@@ -131,7 +159,7 @@ func (self *Builder) genExpr(node ast.Node) *ExprResult {
 		// pop the args and save the result on stack
 		return nil
 	case *ast.Operand:
-		return nil // TODO:
+		return self.genOperand(expr)
 	default:
 		panic("bug")
 	}

@@ -5,7 +5,7 @@ type Pointer struct {
 }
 
 func (self *Pointer) Size() uint32 {
-	return _uint32.Size()
+	return U32.Size()
 }
 
 func NewPointer(t Type) *Pointer {

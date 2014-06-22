@@ -3,20 +3,20 @@ package types
 type basic int
 
 const (
-	_void basic = iota
-	_int32
-	_uint32
-	_int8
-	_uint8
+	V basic = iota
+	I32
+	U32
+	I8
+	U8
 )
 
 func (b basic) Size() uint32 {
 	switch b {
-	case _void:
+	case V:
 		return 0
-	case _int32, _uint32:
+	case I32, U32:
 		return 4
-	case _int8, _uint8:
+	case I8, U8:
 		return 1
 	}
 
