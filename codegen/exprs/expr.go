@@ -24,26 +24,23 @@ type Addr struct {
 	Type types.Type
 
 	/*
-		Base on which register
+		Location base on which register
 		- 0 for absolute
 		- 30 for stack pointer
+		- 31 for relative jumping (relative PC)
 	*/
-	Base uint8
-
-	/*
-		The address location that can be filled later.
-		For function calling, the address should be replaced with
-		a relative value later.
-		For external linked symbols, the address will be left as
-		unfilled, and will only be filled on linking stage.
-	*/
-	Fill *uint32
+	LocBase uint8
 
 	/*
 		The address location to use when Fill is nill.
 	*/
-	Offset uint32
+	Loc uint32
 
+	ReadOnly bool
+}
+
+type Ref struct {
+	Type types.Type
 	ReadOnly bool
 }
 
