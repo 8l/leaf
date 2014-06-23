@@ -40,7 +40,7 @@ type Addr struct {
 }
 
 type Ref struct {
-	Type types.Type
+	Type     types.Type
 	ReadOnly bool
 }
 

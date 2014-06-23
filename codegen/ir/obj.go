@@ -12,7 +12,7 @@ import (
 type Obj struct {
 	Name string
 	Addr uint32
-	Buf *bytes.Buffer
+	Buf  *bytes.Buffer
 }
 
 func NewObj() *Obj {
