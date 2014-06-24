@@ -10,7 +10,7 @@ type Inst struct {
 type Op int
 
 const (
-	Push  Op = iota
-	SpAdd    // add stack pointer
-	Call
+	Push Op = iota
+	Link    // Load a block start address
+	Call    // Call A
 )

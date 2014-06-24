@@ -42,22 +42,3 @@ func (self *Func) Link(link interface{}) *Var {
 func (self *Func) Push(vars ...*Var) {
 
 }
-
-/*
-	func main:
-		// no arg
-		// no ret
-		<0> = 42
-		<1> = link "<builtin>.printInt"
-		push <0>
-		call <1>
-
-	and from a building perspective
-
-	f := NewFunc()
-	_0 := f.Const(42)
-	_1 := f.Link(printInt)
-	f.Push(_0)
-	f.Call(_1)
-
-*/
