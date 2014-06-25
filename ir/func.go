@@ -33,12 +33,6 @@ func (self *Func) Const(i uint32) *Var {
 	return ret
 }
 
-func (self *Func) Link(link interface{}) *Var {
-	ret := self.newVar()
-	ret.Link = link
-	return ret
-}
-
 func (self *Func) Push(vars ...*Var) {
 
 }

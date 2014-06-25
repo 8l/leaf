@@ -7,8 +7,8 @@ package ir
 	// also for this extern code block, we don't need to know its actual size
 
 	// external symbols
-	package <builtin>:
-		func printInt
+	import <builtin>:
+		func printInt // represents a symbol that will be filled later
 
 	func main:
 		// no arg
