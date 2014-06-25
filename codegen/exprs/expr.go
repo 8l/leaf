@@ -35,13 +35,6 @@ type Addr struct {
 		The address location to use when Fill is nill.
 	*/
 	Loc uint32
-
-	ReadOnly bool
-}
-
-type Ref struct {
-	Type     types.Type
-	ReadOnly bool
 }
 
 // can be used as a function for casting type into the target type
