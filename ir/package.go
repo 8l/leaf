@@ -1,5 +1,8 @@
 package ir
 
+// Package is only a collection of stuff
+// It does not provide name to object mapping.
+// An object might have a name, but it is only for debugging
 type Package struct {
 	Name string
 
