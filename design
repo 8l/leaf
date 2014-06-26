@@ -1,0 +1,52 @@
+- an object file is a module that is ready for linking
+- linking might happen at compile, but also might happen at loading time.
+- an object file looks like this:
+
+package table (ID'izing named imports)
+    id   // sequential id
+    path // absolute import path, unique in the system
+object table
+    id   // 
+    name // could be nameless, only named objects can be referenced
+    typeId // the type signature
+    content // an object might be a function (a series of byte code) or just a block of reserved memory
+reference table (ID'izing named references)
+    id          // sequential id
+    packId      // package id
+    name        // reference name, just for easier debugging
+    objId       // object id, only useful for objects in this package, reference for o
+
+importing is adding references into the reference table
+- an object file here seems typeless
+- however, importing a package will also import the types.
+- but do not need to import the content though
+- a type system is not that structured
+
+type table
+    id //
+    basics 
+    func type, type, type, ret type
+    struct {
+        name type,
+        name type,
+    }
+    pointer type,
+    slice type // alias to pointers
+    array type, length,
+    interface {
+        name type, // has to be function type
+        name type,
+    }
+    named {
+        pack // a pointer to packet
+        name
+        type
+    }
+
+- each type also has its underlying type
+- all types in the type table are unique to each other
+- so they'd better be sorted in some order
+
+type =>
+    - basics
+    - func (type)* type
