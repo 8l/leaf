@@ -6,13 +6,11 @@ package ir
 type Package struct {
 	Name string
 
-	Deps []*Dep
 	This *Dep
+	Deps []*Dep
 
 	Funcs []*Func
 	Vars  []*Var
-
-	depMap map[string]*Dep
 }
 
 func NewPackage(name string) *Package {
@@ -35,14 +33,9 @@ func (self *Package) NewVar() *Var {
 }
 
 func (self *Package) NewDep(name string) *Dep {
-	if self.depMap[name] != nil {
-		panic("bug")
-	}
-
 	ret := new(Dep)
 	ret.Name = name
-
-	self.depMap[name] = ret
-
+	
+	self.Deps = append(self.Deps, ret)
 	return ret
 }
