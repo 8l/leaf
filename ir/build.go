@@ -44,7 +44,3 @@ func (self *Build) ImportPackage(path string) *Package {
 func (self *Build) importPackage(path string) *Package {
 	panic("todo")
 }
-
-func (self *Build) LoadPackage(path string) *Package {
-	panic("todo")
-}

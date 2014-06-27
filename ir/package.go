@@ -14,11 +14,11 @@ func newPackage(path string) *Package {
 }
 
 type Package struct {
-	path  string // absolute path of the package
-	build *Build
-	scope *sym.Scope
-	files []*File
+	path  string     // absolute path of the package
+	build *Build     // the build that this package belongs to
+	scope *sym.Scope // top level symbols
 
+	files    []*File
 	dataSegs []*Data
 	codeSegs []*Code
 }
