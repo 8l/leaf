@@ -8,13 +8,13 @@ syntax similar to Go language.
 
 Here are some language features.
 - Very small run time.
-- No macros.
-- No garbage collections.
-- Programs are organized in packages.
 - Type unsafe: you can cast from any type to any type.
-- Can bind methods with named type.
-- Implicitly supports interfaces.
-- Supports anonymous member variable, and hence do not support inheritance.
+- Programs are organized in packages.
+- No macros.
+- No garbage collection.
+- Can bind methods with named type (like Go)
+- Has interfaces (like Go).
+- Has anonymous member variable (like Go), and hence no inheritance.
 
 As my first try here, I will only try to make the compiler work. So the
 compiling might be slow, and the assembly generated won't be beautiful.
