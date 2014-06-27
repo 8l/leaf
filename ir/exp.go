@@ -5,9 +5,8 @@ func example() {
 
 	p := b.NewPackage("p")
 	file := p.NewFile("a.leaf")
-	t := p.NewFuncType()
-
-	fn := file.DeclareFunc("main", t)
+	funcType := p.NewFuncType()
+	fn := file.DeclareFunc("main", p.TypeRef(funcType))
 
 	seg := fn.Define()
 	v1 := seg.Number(42)

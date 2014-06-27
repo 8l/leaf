@@ -43,6 +43,12 @@ func (self *Package) typeRef(t Type) TypeRef {
 }
 
 // Add a new function type
-func (self *Package) NewFuncType() TypeRef {
+func (self *Package) NewFuncType() *FuncType {
+	ret := new(FuncType)
+	ret.pack = self
+	return ret
+}
+
+func (self *Package) TypeRef(t Type) TypeRef {
 	panic("todo")
 }
