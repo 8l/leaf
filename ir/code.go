@@ -1,12 +1,25 @@
 package ir
 
 import (
+	"e8vm.net/e8/inst"
 	sym "e8vm.net/leaf/ir/symbol"
 )
 
 type Code struct {
-	table *sym.Table
+	table     *sym.Table
+	frameSize int16
+	insts     []Inst
 }
+
+/*
+$29: stack top pointer, always increase
+$30: stack base pointer
+$31: pc
+*/
+
+const (
+	regSP = 30 // stack pointer
+)
 
 func (self *Code) Query(name string) Obj {
 	s := self.table.Get(name)
@@ -18,20 +31,38 @@ func (self *Code) Query(name string) Obj {
 	case sym.Func:
 		// must be a top function declaration
 		f := s.Obj().(*Func)
-		return Sym{f.file.pack.path, f.name}
+		return &Sym{f.file.pack.path, f.name}
 	default:
 		panic("todo")
 	}
 }
 
+func (self *Code) push(size int16) StackObj {
+	var ret StackObj
+	ret.Offset = self.frameSize
+	ret.Len = size
+
+	self.frameSize += size
+	// check frameSize overflow here
+	return ret
+}
+
+func (self *Code) pushReg(r uint8) StackObj {
+	ret := self.push(4)
+	inst.Iinst(inst.OpSw, regSP, r, uint16(ret.Offset))
+	return ret
+}
+
 func (self *Code) Push(o Obj) Obj {
 	assert(o != nil)
 
-	switch o.(type) {
+	switch o := o.(type) {
 	case Imm:
-		panic("todo")
-	case Sym:
-		panic("todo")
+		self.loadi(1, uint32(o))
+		return self.pushReg(1)
+	case *Sym:
+		self.loadiSym(1, o)
+		return self.pushReg(1)
 	case StackObj:
 		panic("todo")
 	case HeapObj:
@@ -41,13 +72,28 @@ func (self *Code) Push(o Obj) Obj {
 	}
 }
 
+func (self *Code) Pop(objs ...Obj) {
+	size := int16(0)
+	for _, o := range objs {
+		switch o := o.(type) {
+		case Imm, *Sym:
+			size += 4
+		case StackObj:
+			size += o.Len
+		default:
+			panic("bug")
+		}
+	}
+	self.frameSize -= size
+}
+
 func (self *Code) Call(o Obj) {
 	assert(o != nil)
 
 	switch o.(type) {
 	case Imm:
 		panic("bug") // remove this when you really need to call an imm
-	case Sym:
+	case *Sym:
 		panic("todo")
 	case StackObj: // a function variable
 		panic("todo")

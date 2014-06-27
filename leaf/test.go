@@ -13,8 +13,9 @@ func mainTest(_ []string) {
 	file.DeclFunc(fn)
 
 	seg := fn.Define()
-	seg.Push(seg.Imm(42))
+	i := seg.Push(seg.Imm(42))
 	seg.Call(seg.Query("printInt"))
+	seg.Pop(i)
 
 	p.Save()
 }
