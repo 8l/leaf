@@ -1,6 +1,6 @@
 package ir
 
 type TypeRef struct {
-	importId int
-	typeId   int
+	importId int // map to package
+	typeId   int // map to type
 }

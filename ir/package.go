@@ -29,10 +29,18 @@ func (self *Package) Save() {
 	panic("todo")
 }
 
+func (self *Package) Type(t TypeRef) Type {
+	pid := self.imports[t.importId]
+	p := self.build.packs[pid]
+	index := p.types[t.typeId]
+	return self.build.typeList.types[index]
+}
+
 // Based on a type object finds its equivalent type ref.
 // If the type object is a new unique one, then add it
 // into the type object library.
 func (self *Package) TypeRef(t Type) TypeRef {
+
 	panic("todo")
 }
 

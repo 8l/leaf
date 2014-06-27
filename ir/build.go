@@ -39,7 +39,6 @@ func (self *Build) addBuiltIn() {
 	p.DeclType("char", i8)
 	p.DeclType("byte", u8)
 	p.DeclType("ptr", ptr)
-
 }
 
 func (self *Build) addPackage(p *Package) {

@@ -17,3 +17,11 @@ func (self *FuncType) SetRet(t TypeRef) {
 func (self *FuncType) Size() uint32 {
 	return addrSize
 }
+
+func (self *FuncType) RetType() Type {
+	return self.pack.Type(self.ret)
+}
+
+func (self *FuncType) ArgType(i int) Type {
+	return self.pack.Type(self.args[i])
+}
