@@ -17,4 +17,3 @@ func (self *Named) Size() uint32 {
 func (self *Named) String() string {
 	return fmt.Sprintf("%q.%s", self.Path, self.Name)
 }
-

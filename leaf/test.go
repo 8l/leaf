@@ -9,7 +9,8 @@ func mainTest(_ []string) {
 	b := ir.NewBuild()
 	p := b.NewPackage("p")
 	file := p.NewFile("a.leaf")
-	fn := file.DeclareFunc("main", new(types.Func))
+	fn := file.NewFunc("main", types.NewFunc(nil))
+	file.DeclFunc(fn)
 
 	seg := fn.Define()
 	v1 := seg.Number(42)

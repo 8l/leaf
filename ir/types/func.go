@@ -9,6 +9,15 @@ type Func struct {
 	Args []Type
 }
 
+func NewFunc(r Type, args ...Type) *Func {
+	ret := new(Func)
+	ret.Ret = r
+	ret.Args = make([]Type, len(args))
+	copy(ret.Args, args)
+
+	return ret
+}
+
 func (self *Func) Size() uint32 {
 	return addrSize
 }

@@ -22,7 +22,7 @@ func (self *Table) PopScope() {
 	self.stack = self.stack[:nstack-1]
 }
 
-func (self *Table) Get(n string) Symbol {
+func (self *Table) Get(n string) *Symbol {
 	nstack := len(self.stack)
 	for i := nstack - 1; i >= 0; i-- {
 		s := self.stack[i]

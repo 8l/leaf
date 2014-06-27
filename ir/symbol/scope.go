@@ -1,38 +1,41 @@
 package symbol
 
 type Scope struct {
-	list []Symbol
-	m    map[string]Symbol
+	list []*Symbol
+	m    map[string]*Symbol
 }
 
 func NewScope() *Scope {
 	ret := new(Scope)
-	ret.m = make(map[string]Symbol)
+	ret.m = make(map[string]*Symbol)
 	return ret
 }
 
-// Try to register a new symbol, returns nil when succeeds,
-// returns the symbol with the same name if the symbol is already
-// registered
-func (self *Scope) Register(name string, c Class, s Symbol) Symbol {
+func (self *Scope) Add(name string, c Class, obj interface{}) *Symbol {
 	cur := self.Get(name)
 	if cur != nil {
-		return cur
+		panic("symbol exists")
 	}
 
-	self.list = append(self.list, s)
-	self.m[name] = s
-	return nil
+	sym := new(Symbol)
+	sym.name = name
+	sym.class = c
+	sym.object = obj
+
+	self.list = append(self.list, sym)
+	self.m[name] = sym
+
+	return sym
 }
 
-// Scope the symbols in registered order.
-// For simplicity, we just returned the list saved in the struct.
-// The caller should not change the order of this symbol list.
-func (self *Scope) List() []Symbol {
+func (self *Scope) List() []*Symbol {
 	return self.list
 }
 
-// Get the symbol with a specific name
-func (self *Scope) Get(n string) Symbol {
+func (self *Scope) Get(n string) *Symbol {
 	return self.m[n]
+}
+
+func (self *Scope) Has(n string) bool {
+	return self.Get(n) != nil
 }

@@ -6,7 +6,18 @@ import (
 
 type Func struct {
 	name string
-	t    types.Type
+	t    *types.Func
 	file *File
 	code *Code
+}
+
+func (self *Func) Define() *Code {
+	assert(self.code == nil)
+
+	ret := new(Code)
+	ret.table = self.file.newSymTable()
+
+	self.code = ret
+
+	return ret
 }

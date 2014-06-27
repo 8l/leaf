@@ -1,6 +1,11 @@
 package ir
 
+import (
+	sym "e8vm.net/leaf/ir/symbol"
+)
+
 type Code struct {
+	table *sym.Table
 }
 
 func (self *Code) Query(name string) *Ref {
