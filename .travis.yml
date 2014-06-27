@@ -6,6 +6,7 @@ go:
 
 install:
     - go get e8vm.net/leaf
+    - go get e8vm.net/e8
 
 script:
     - go test e8vm.net/leaf/...
