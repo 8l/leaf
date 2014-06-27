@@ -17,5 +17,6 @@ func mainTest(_ []string) {
 	seg.Call(seg.Query("printInt"))
 	seg.Pop(i)
 
-	p.Save()
+	// p.Save()
+	b.Print()
 }

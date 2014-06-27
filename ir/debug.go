@@ -5,6 +5,12 @@ import (
 	"e8vm.net/leaf/prt"
 )
 
+func (self *Build) Print() {
+	for _, p := range self.packs {
+		p.Print()
+	}
+}
+
 func (self *Package) Print() {
 	// just for debugging
 	p := prt.Stdout()
@@ -33,7 +39,9 @@ func (self *Package) Print() {
 		switch f := obj.(type) {
 		case *Func:
 			p.Printf("func %s %s", name, f.t.SigString())
-			printInsts(p, f.code)
+			if f.code != nil {
+				printInsts(p, f.code)
+			}
 		default:
 			panic("bug")
 		}
