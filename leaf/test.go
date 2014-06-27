@@ -12,7 +12,7 @@ func mainTest(_ []string) {
 	fn := file.NewFunc("main", types.NewFunc(nil))
 	file.DeclFunc(fn)
 
-	c:= fn.Define()
+	c := fn.Define()
 	i := c.Push(ir.Imm(uint8('E')))
 	c.Call(c.Query("printChar"))
 	c.Pop(i)
