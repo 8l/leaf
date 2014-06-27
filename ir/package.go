@@ -62,8 +62,8 @@ func makeBuiltIn() *Package {
 	f.DeclType("byte", types.Uint8)
 	f.DeclType("ptr", types.NewPointer(nil))
 
-	fn := f.NewFunc("printInt", types.NewFunc(nil, types.Int32))
-	f.DeclFunc(fn)
+	f.DeclFunc(f.NewFunc("printInt", types.NewFunc(nil, types.Int32)))
+	f.DeclFunc(f.NewFunc("printChar", types.NewFunc(nil, types.Int8)))
 
 	return p
 }

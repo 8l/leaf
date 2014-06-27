@@ -46,7 +46,10 @@ func (self *Code) luiSym(t uint8, sym *Sym) {
 }
 
 func (self *Code) loadi(reg uint8, i uint32) {
-	self.lui(reg, uint16(i>>16))
+	up := uint16(i >> 16)
+	if up != 0 {
+		self.lui(reg, uint16(i>>16))
+	}
 	self.addi(reg, 0, int16(uint16(i)))
 }
 

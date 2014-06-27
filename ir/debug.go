@@ -3,6 +3,7 @@ package ir
 import (
 	"e8vm.net/leaf/ir/types"
 	"e8vm.net/leaf/prt"
+	"reflect"
 )
 
 func (self *Build) Print() {
@@ -16,9 +17,8 @@ func (self *Package) Print() {
 	p := prt.Stdout()
 	p.Indent = "    "
 
-	p.Print(self.path)
+	p.Println("package", self.path)
 	p.ShiftIn()
-	defer p.ShiftOut()
 
 	for _, t := range self.types {
 		name := t.Name()
@@ -28,8 +28,11 @@ func (self *Package) Print() {
 			p.Printf("type %s %s", name, t.Type)
 		case types.Basic:
 			p.Printf("type %s <%s>", name, t.String())
+		case *types.Pointer:
+			assert(t.Type == nil)
+			p.Printf("type %s", name)
 		default:
-			panic("todo")
+			panic(reflect.TypeOf(obj))
 		}
 	}
 
@@ -38,18 +41,28 @@ func (self *Package) Print() {
 		obj := f.Obj()
 		switch f := obj.(type) {
 		case *Func:
-			p.Printf("func %s %s", name, f.t.SigString())
+			p.Printf("func %s%s", name, f.t.SigString())
 			if f.code != nil {
+				p.ShiftIn()
 				printInsts(p, f.code)
+				p.ShiftOut()
 			}
 		default:
 			panic("bug")
 		}
 	}
 
-	for _, f := range self.files {
-		p.Print(f.name)
+	if len(self.files) > 0 {
+		p.Print("<files>")
+		p.ShiftIn()
+		for _, f := range self.files {
+			p.Print(f.name)
+		}
+		p.ShiftOut()
 	}
+
+	p.ShiftOut()
+	p.Println()
 }
 
 func printInsts(p *prt.Printer, c *Code) {

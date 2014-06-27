@@ -7,15 +7,21 @@ import (
 
 func mainTest(_ []string) {
 	b := ir.NewBuild()
-	p := b.NewPackage("p")
-	file := p.NewFile("a.leaf")
+	p := b.NewPackage("e8")
+	file := p.NewFile("e8.leaf")
 	fn := file.NewFunc("main", types.NewFunc(nil))
 	file.DeclFunc(fn)
 
-	seg := fn.Define()
-	i := seg.Push(ir.Imm(42))
-	seg.Call(seg.Query("printInt"))
-	seg.Pop(i)
+	c:= fn.Define()
+	i := c.Push(ir.Imm(uint8('E')))
+	c.Call(c.Query("printChar"))
+	c.Pop(i)
+
+	i = c.Push(ir.Imm(uint8('8')))
+	c.Call(c.Query("printChar"))
+	c.Pop(i)
+
+	c.Return()
 
 	// p.Save()
 	b.Print()
