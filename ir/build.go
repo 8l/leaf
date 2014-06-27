@@ -1,12 +1,16 @@
 package ir
 
 type Build struct {
-	packs   []*Package
-	packMap map[string]*Package
+	packs    []*Package
+	packMap  map[string]*Package
+	typeList *typeList
 }
 
 func NewBuild() *Build {
 	ret := new(Build)
+	ret.packMap = make(map[string]*Package)
+	ret.typeList = newTypeList()
+
 	ret.addBuiltIn()
 
 	return ret

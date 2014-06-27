@@ -11,8 +11,8 @@ type Package struct {
 	pid   int
 	build *Build
 
-	imports  []int  // packageIds
-	types    []Type // a list of types
+	imports  []int // packageIds
+	types    []int // map to type id in the package type list
 	symbols  []Symbol
 	dataSegs []*Data
 	codeSegs []*Code
@@ -32,10 +32,6 @@ func (self *Package) Save() {
 // Based on a type object finds its equivalent type ref.
 // If the type object is a new unique one, then add it
 // into the type object library.
-func (self *Package) typeRef(t Type) TypeRef {
-	panic("todo")
-}
-
 func (self *Package) TypeRef(t Type) TypeRef {
 	panic("todo")
 }
