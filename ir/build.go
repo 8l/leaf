@@ -7,11 +7,35 @@ type Build struct {
 
 func NewBuild() *Build {
 	ret := new(Build)
-	builtin := makeBuiltIn()
-
-	ret.addPackage(builtin)
+	ret.addBuiltIn()
 
 	return ret
+}
+
+func (self *Build) addBuiltIn() {
+	p := newPackage("<builtin>")
+	self.addPackage(p)
+
+	void := p.TypeRef(nil)
+	assert(void.importId == 0 && void.typeId == 0)
+
+	u32 := p.TypeRef(Uint32)
+	i32 := p.TypeRef(Int32)
+	u8 := p.TypeRef(Uint8)
+	i8 := p.TypeRef(Int8)
+
+	ptr := p.TypeRef(p.NewPointerType(void))
+
+	p.DeclType("int32", i32)
+	p.DeclType("uint32", u32)
+	p.DeclType("int", i32)
+	p.DeclType("uint", u32)
+	p.DeclType("int8", i8)
+	p.DeclType("uint8", u8)
+	p.DeclType("char", i8)
+	p.DeclType("byte", u8)
+	p.DeclType("ptr", ptr)
+
 }
 
 func (self *Build) addPackage(p *Package) {

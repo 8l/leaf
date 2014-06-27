@@ -1,12 +1,5 @@
 package ir
 
-func makeBuiltIn() *Package {
-	ret := newPackage("<builtin>")
-	panic("todo")
-	// TODO: add builtin types and funtions here
-	return ret
-}
-
 func newPackage(path string) *Package {
 	ret := new(Package)
 	ret.path = path
@@ -18,8 +11,8 @@ type Package struct {
 	pid   int
 	build *Build
 
-	imports  []int // packageIds
-	types    []Type
+	imports  []int  // packageIds
+	types    []Type // a list of types
 	symbols  []Symbol
 	dataSegs []*Data
 	codeSegs []*Code
@@ -43,6 +36,10 @@ func (self *Package) typeRef(t Type) TypeRef {
 	panic("todo")
 }
 
+func (self *Package) TypeRef(t Type) TypeRef {
+	panic("todo")
+}
+
 // Add a new function type
 func (self *Package) NewFuncType() *FuncType {
 	ret := new(FuncType)
@@ -50,6 +47,13 @@ func (self *Package) NewFuncType() *FuncType {
 	return ret
 }
 
-func (self *Package) TypeRef(t Type) TypeRef {
+func (self *Package) NewPointerType(t TypeRef) *PointerType {
+	ret := new(PointerType)
+	ret.pack = self
+	ret.t = t
+	return ret
+}
+
+func (self *Package) DeclType(name string, tr TypeRef) Symbol {
 	panic("todo")
 }
