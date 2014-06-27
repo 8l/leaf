@@ -58,9 +58,9 @@ const (
 
 func (self *Build) Build(p string) {
 	c := new(Code)
-	c.loadi(regSP, stackStart)
-	c.jalSym(&Sym{p, "main"})
-	c.sb(0, 0, ioHalt)
+	c.loadi(regSP, stackStart) // init the stack pointer
+	c.jalSym(&Sym{p, "main"})  // jump to the main function
+	c.sb(0, 0, ioHalt)         // halt the VM
 
 	panic(c)
 }
