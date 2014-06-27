@@ -28,6 +28,7 @@ type Package struct {
 func (self *Package) NewFile(name string) *File {
 	ret := new(File)
 	ret.pack = self
+	ret.name = name
 	return ret
 }
 

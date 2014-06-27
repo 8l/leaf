@@ -27,6 +27,8 @@ func main() {
 		mainBuild(args)
 	case "help":
 		mainHelp(args)
+	case "test":
+		mainTest(args)
 	default:
 		fmt.Fprintf(os.Stderr, "leaf: unknown subcommand %q.\n", cmd)
 		fmt.Fprintf(os.Stderr, "Run 'leaf help' for usage.\n")
