@@ -35,7 +35,7 @@ func (self *Package) NewVar() *Var {
 func (self *Package) NewDep(name string) *Dep {
 	ret := new(Dep)
 	ret.Name = name
-	
+
 	self.Deps = append(self.Deps, ret)
 	return ret
 }
