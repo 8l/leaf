@@ -14,13 +14,22 @@ type Func struct {
 func (self *Func) Define() *Code {
 	assert(self.code == nil)
 
-	ret := new(Code)
-	ret.table = self.file.newSymTable()
+	c := new(Code)
+	c.table = self.file.newSymTable()
+	c.retAddr = c.pushReg(regRet) // the return address
 
-	self.code = ret
+	// TODO: check the object size
+	if self.t.Ret != nil {
+		c.ret = c.fetchArg(int16(self.t.Ret.Size()))
+	}
 
-	c := self.code
-	c.ret = c.pushReg(regRet) // the return address
+	narg := len(self.t.Args)
+	c.args = make([]StackObj, narg)
+	for i := narg - 1; i >= 0; i-- {
+		arg := self.t.Args[i]
+		c.args[i] = c.fetchArg(int16(arg.Size()))
+	}
 
-	return ret
+	self.code = c
+	return c
 }

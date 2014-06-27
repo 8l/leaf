@@ -7,6 +7,7 @@ import (
 
 func mainTest(_ []string) {
 	b := ir.NewBuild()
+
 	p := b.NewPackage("e8")
 	file := p.NewFile("e8.leaf")
 	fn := file.NewFunc("main", types.NewFunc(nil))
@@ -21,8 +22,13 @@ func mainTest(_ []string) {
 	c.Call(c.Query("printChar"))
 	c.Pop(i)
 
+	i = c.Push(ir.Imm(uint8('\n')))
+	c.Call(c.Query("printChar"))
+	c.Pop(i)
+
 	c.Return()
 
 	// p.Save()
 	b.Print()
+	b.Build("e8")
 }

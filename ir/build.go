@@ -44,3 +44,23 @@ func (self *Build) ImportPackage(path string) *Package {
 func (self *Build) importPackage(path string) *Package {
 	panic("todo")
 }
+
+const (
+	segSize = (1 << 32) / 4
+)
+
+const (
+	ioStart uint32 = segSize * iota
+	codeStart
+	heapStart
+	stackStart
+)
+
+func (self *Build) Build(p string) {
+	c := new(Code)
+	c.loadi(regSP, stackStart)
+	c.jalSym(&Sym{p, "main"})
+	c.sb(0, 0, ioHalt)
+
+	panic(c)
+}

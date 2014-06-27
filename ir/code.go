@@ -7,10 +7,13 @@ import (
 
 type Code struct {
 	table     *sym.Table
-	frameSize int16
+	frameSize int16 // from SP to SP + framesize
+	argsSize  int16 // from SP to SP - argssize
 	insts     []Inst
 
-	ret StackObj
+	retAddr StackObj
+	ret     StackObj
+	args    []StackObj
 }
 
 const (
@@ -18,6 +21,10 @@ const (
 	regRet = inst.RegRet // return address
 	regPC  = inst.RegPC
 )
+
+func (self *Code) Size() uint32 {
+	return uint32(len(self.insts)) * 4
+}
 
 func (self *Code) Query(name string) Obj {
 	s := self.table.Get(name)
@@ -35,19 +42,37 @@ func (self *Code) Query(name string) Obj {
 	}
 }
 
+func (self *Code) fetchArg(size int16) StackObj {
+	var ret StackObj
+	self.argsSize += alignUp(size)
+	ret.Offset = -self.argsSize
+	ret.Len = size
+
+	return ret
+}
+
+func alignUp(size int16) int16 {
+	if size%4 != 0 {
+		size = ((size >> 2) << 2) + 4
+	}
+	return size
+}
+
 func (self *Code) push(size int16) StackObj {
+	assert(size > 0)
+
 	var ret StackObj
 	ret.Offset = self.frameSize
 	ret.Len = size
 
-	self.frameSize += size
+	self.frameSize += alignUp(size)
 	// check frameSize overflow here
 	return ret
 }
 
 func (self *Code) pushReg(r uint8) StackObj {
 	ret := self.push(4)
-	self.sstack(r, ret)
+	self.swStack(r, ret)
 	return ret
 }
 
@@ -124,5 +149,5 @@ func (self *Code) Call(o Obj) {
 
 // Jump back to the calling PC position.
 func (self *Code) Return() {
-	self.lstack(regPC, self.ret)
+	self.lwStack(regPC, self.retAddr)
 }

@@ -33,10 +33,20 @@ func (self *File) Import(path string) *Package {
 
 func (self *File) newSymTable() *sym.Table {
 	ret := sym.NewTable()
-	ret.PushScope(self.builtInScope())
+
+	if self.pack.path != "builtin" {
+		ret.PushScope(self.builtInScope())
+	}
+	ret.PushScope(self.packScope())
+	// TODO: add imports
+
 	return ret
 }
 
 func (self *File) builtInScope() *sym.Scope {
 	return self.pack.build.builtIn.scope
+}
+
+func (self *File) packScope() *sym.Scope {
+	return self.pack.scope
 }

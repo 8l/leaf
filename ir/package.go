@@ -62,8 +62,28 @@ func makeBuiltIn() *Package {
 	f.DeclType("byte", types.Uint8)
 	f.DeclType("ptr", types.NewPointer(nil))
 
-	f.DeclFunc(f.NewFunc("printInt", types.NewFunc(nil, types.Int32)))
-	f.DeclFunc(f.NewFunc("printChar", types.NewFunc(nil, types.Int8)))
+	// f.DeclFunc(f.NewFunc("printInt", types.NewFunc(nil, types.Int32)))
+
+	printChar := f.NewFunc("printChar", types.NewFunc(nil, types.Int8))
+	f.DeclFunc(printChar)
+	defPrintChar(printChar)
 
 	return p
+}
+
+const (
+	ioOutReady = 9
+	ioOutWrite = 9
+	ioHalt     = 8
+)
+
+func defPrintChar(f *Func) {
+	c := f.Define()
+
+	c.lbuStack(1, c.args[0])
+	c.lbu(2, 0, ioOutReady) // is output ready
+	c.bne(2, 0, -2)         // keep pulling if not ready
+	c.sb(1, 0, ioOutWrite)  // write the byte
+
+	c.Return()
 }
