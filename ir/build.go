@@ -28,10 +28,8 @@ func (self *Build) addPackage(p *Package) {
 }
 
 func (self *Build) NewPackage(path string) *Package {
-	ret := new(Package)
-	ret.path = path
+	ret := newPackage(path)
 	self.addPackage(ret)
-
 	return ret
 }
 
