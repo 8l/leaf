@@ -27,8 +27,16 @@ func (self *Func) AddArg(t Type) {
 }
 
 func (self *Func) String() string {
+	return self.str(true)
+}
+
+func (self *Func) str(header bool) string {
 	buf := new(bytes.Buffer)
-	buf.WriteString("func (")
+	if header {
+		buf.WriteString("func (")
+	} else {
+		buf.WriteString("(")
+	}
 	for i, arg := range self.Args {
 		if i > 0 {
 			buf.WriteString(", ")
@@ -43,4 +51,8 @@ func (self *Func) String() string {
 	}
 
 	return buf.String()
+}
+
+func (self *Func) SigString() string {
+	return self.str(false)
 }

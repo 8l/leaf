@@ -6,6 +6,7 @@ import (
 	"bytes"
 	"fmt"
 	"io"
+	"os"
 )
 
 type Printer struct {
@@ -29,6 +30,10 @@ func New(w io.Writer) *Printer {
 		Indent: "\t",
 		Writer: w,
 	}
+}
+
+func Stdout() *Printer {
+	return New(os.Stdout)
 }
 
 func (self *Printer) p(n *int, a ...interface{}) {

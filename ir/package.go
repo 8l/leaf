@@ -18,9 +18,9 @@ type Package struct {
 	build *Build     // the build that this package belongs to
 	scope *sym.Scope // top level symbols
 
-	files    []*File
-	dataSegs []*Data
-	codeSegs []*Code
+	files []*File
+	types []*sym.Symbol
+	funcs []*sym.Symbol
 }
 
 func (self *Package) NewFile(name string) *File {
@@ -36,12 +36,16 @@ func (self *Package) Save() {
 	panic("todo")
 }
 
-func (self *Package) DeclType(name string, t types.Type) *sym.Symbol {
-	return self.scope.Add(name, sym.Type, t)
+func (self *Package) declType(name string, t types.Type) *sym.Symbol {
+	ret := self.scope.Add(name, sym.Type, t)
+	self.types = append(self.types, ret)
+	return ret
 }
 
-func (self *Package) DeclFunc(f *Func) *sym.Symbol {
-	return self.scope.Add(f.name, sym.Func, f)
+func (self *Package) declFunc(f *Func) *sym.Symbol {
+	ret := self.scope.Add(f.name, sym.Func, f)
+	self.funcs = append(self.funcs, ret)
+	return ret
 }
 
 func makeBuiltIn() *Package {

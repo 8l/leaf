@@ -19,5 +19,8 @@ func (self *Func) Define() *Code {
 
 	self.code = ret
 
+	c := self.code
+	c.ret = c.pushReg(regRet) // the return address
+
 	return ret
 }

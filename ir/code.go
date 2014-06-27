@@ -9,16 +9,14 @@ type Code struct {
 	table     *sym.Table
 	frameSize int16
 	insts     []Inst
+
+	ret StackObj
 }
 
-/*
-$29: stack top pointer, always increase
-$30: stack base pointer
-$31: pc
-*/
-
 const (
-	regSP = 30 // stack pointer
+	regSP  = 29          // stack pointer
+	regRet = inst.RegRet // return address
+	regPC  = inst.RegPC
 )
 
 func (self *Code) Query(name string) Obj {
@@ -49,11 +47,23 @@ func (self *Code) push(size int16) StackObj {
 
 func (self *Code) pushReg(r uint8) StackObj {
 	ret := self.push(4)
-	inst.Iinst(inst.OpSw, regSP, r, uint16(ret.Offset))
+	self.sstack(r, ret)
 	return ret
 }
 
-func (self *Code) Push(o Obj) Obj {
+// Allocate a new stack object.
+func (self *Code) Var(name string, size int16) StackObj {
+	ret := self.push(size)
+	if name != "_" {
+		// register a variable symbol here
+		panic("todo")
+	}
+	return ret
+}
+
+// Push an object onto the top of the stack frame,
+// increases the stack frame size, and returns the new stack object.
+func (self *Code) Push(o Obj) StackObj {
 	assert(o != nil)
 
 	switch o := o.(type) {
@@ -72,6 +82,8 @@ func (self *Code) Push(o Obj) Obj {
 	}
 }
 
+// Remove temp objects from the stack frame,
+// decreases the stack frame size
 func (self *Code) Pop(objs ...Obj) {
 	size := int16(0)
 	for _, o := range objs {
@@ -85,16 +97,22 @@ func (self *Code) Pop(objs ...Obj) {
 		}
 	}
 	self.frameSize -= size
+	assert(self.frameSize >= 0)
 }
 
+// Call a function object.
 func (self *Code) Call(o Obj) {
 	assert(o != nil)
 
-	switch o.(type) {
+	switch o := o.(type) {
 	case Imm:
-		panic("bug") // remove this when you really need to call an imm
+		// should never need to call an immediate
+		// should always call a symbol
+		panic("bug")
 	case *Sym:
-		panic("todo")
+		self.addi(regSP, regSP, self.frameSize) // move to the next frame
+		self.jalSym(o)                          // perform the call
+		self.subi(regSP, regSP, self.frameSize) // move back to this frame
 	case StackObj: // a function variable
 		panic("todo")
 	case HeapObj: // a function variable
@@ -104,33 +122,7 @@ func (self *Code) Call(o Obj) {
 	}
 }
 
-func (self *Code) Return(f Obj)     {}
-func (self *Code) Imm(i uint32) Obj { return Imm(i) }
-
-/*
-A code segment is a block of IR.
-This might be changed in the future, but for now, we have
-several types of objects
-
-two types of immediats
-- constant, a uint32 immediate constant
-- symbol, a uint32 immediate constant that will be filled later on linking
-
-two types of memory objects
-- heapObj, a memory block that stays on the heap, a data segment
-- stackObj, a memory block that stays on the stack
-
-IR does not care about type.
-
-IR instructions:
-
-// first will declare the stack objects
-// though currently there is no stack objects needed
-
-push <obj> // hard copy an object to the calling stack
-call <obj> // increase the stack, jump to the address at the object value
-pop // restore the call stack
-ret // return function call
-assign <obj1> <obj2> // copy the value of the obj2 to the location of obj1
-
-*/
+// Jump back to the calling PC position.
+func (self *Code) Return() {
+	self.lstack(regPC, self.ret)
+}

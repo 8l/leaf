@@ -20,11 +20,11 @@ func (self *File) NewFunc(name string, t *types.Func) *Func {
 }
 
 func (self *File) DeclFunc(f *Func) *sym.Symbol {
-	return self.pack.DeclFunc(f)
+	return self.pack.declFunc(f)
 }
 
 func (self *File) DeclType(name string, t types.Type) *sym.Symbol {
-	return self.pack.DeclType(name, t)
+	return self.pack.declType(name, t)
 }
 
 func (self *File) Import(path string) *Package {
