@@ -1,5 +1,9 @@
 package ir
 
+import (
+	"e8vm.net/leaf/ir/types"
+)
+
 func newPackage(path string) *Package {
 	ret := new(Package)
 	ret.path = path
@@ -29,35 +33,6 @@ func (self *Package) Save() {
 	panic("todo")
 }
 
-func (self *Package) Type(t TypeRef) Type {
-	pid := self.imports[t.importId]
-	p := self.build.packs[pid]
-	index := p.types[t.typeId]
-	return self.build.typeList.types[index]
-}
-
-// Based on a type object finds its equivalent type ref.
-// If the type object is a new unique one, then add it
-// into the type object library.
-func (self *Package) TypeRef(t Type) TypeRef {
-
-	panic("todo")
-}
-
-// Add a new function type
-func (self *Package) NewFuncType() *FuncType {
-	ret := new(FuncType)
-	ret.pack = self
-	return ret
-}
-
-func (self *Package) NewPointerType(t TypeRef) *PointerType {
-	ret := new(PointerType)
-	ret.pack = self
-	ret.t = t
-	return ret
-}
-
-func (self *Package) DeclType(name string, tr TypeRef) Symbol {
+func (self *Package) DeclType(name string, t types.Type) Symbol {
 	panic("todo")
 }

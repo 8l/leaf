@@ -1,15 +1,17 @@
 package ir
 
+import (
+	"e8vm.net/leaf/ir/types"
+)
+
 type Build struct {
-	packs    []*Package
-	packMap  map[string]*Package
-	typeList *typeList
+	packs   []*Package
+	packMap map[string]*Package
 }
 
 func NewBuild() *Build {
 	ret := new(Build)
 	ret.packMap = make(map[string]*Package)
-	ret.typeList = newTypeList()
 
 	ret.addBuiltIn()
 
@@ -20,25 +22,15 @@ func (self *Build) addBuiltIn() {
 	p := newPackage("<builtin>")
 	self.addPackage(p)
 
-	void := p.TypeRef(nil)
-	assert(void.importId == 0 && void.typeId == 0)
-
-	u32 := p.TypeRef(Uint32)
-	i32 := p.TypeRef(Int32)
-	u8 := p.TypeRef(Uint8)
-	i8 := p.TypeRef(Int8)
-
-	ptr := p.TypeRef(p.NewPointerType(void))
-
-	p.DeclType("int32", i32)
-	p.DeclType("uint32", u32)
-	p.DeclType("int", i32)
-	p.DeclType("uint", u32)
-	p.DeclType("int8", i8)
-	p.DeclType("uint8", u8)
-	p.DeclType("char", i8)
-	p.DeclType("byte", u8)
-	p.DeclType("ptr", ptr)
+	p.DeclType("int32", types.Int32)
+	p.DeclType("uint32", types.Uint32)
+	p.DeclType("int", types.Int32)
+	p.DeclType("uint", types.Uint32)
+	p.DeclType("int8", types.Int8)
+	p.DeclType("uint8", types.Uint8)
+	p.DeclType("char", types.Int8)
+	p.DeclType("byte", types.Uint8)
+	p.DeclType("ptr", types.NewPointer(nil))
 }
 
 func (self *Build) addPackage(p *Package) {

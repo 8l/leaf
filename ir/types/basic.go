@@ -22,3 +22,14 @@ func (self Basic) Size() uint32 {
 		panic("bug")
 	}
 }
+
+var basicNames = map[Basic]string{
+	Int32:  "int",
+	Uint32: "uint",
+	Int8:   "char",
+	Uint8:  "byte",
+}
+
+func (self Basic) String() string {
+	return basicNames[self]
+}

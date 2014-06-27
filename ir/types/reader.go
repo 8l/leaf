@@ -2,20 +2,21 @@ package types
 
 import (
 	"bytes"
+	"io"
 )
 
-func Unmarshall(bs []byte) Type {
-	r := newReader(bs)
+func Unmarsh(bs []byte) Type {
+	r := newReader(bytes.NewBuffer(bs))
 	return r.read()
 }
 
 type reader struct {
-	*bytes.Buffer
+	io.ByteReader
 }
 
-func newReader(bs []byte) *reader {
+func newReader(br io.ByteReader) *reader {
 	ret := new(reader)
-	ret.Buffer = bytes.NewBuffer(bs)
+	ret.ByteReader = br
 	return ret
 }
 

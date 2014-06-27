@@ -14,4 +14,8 @@ func (self *Pointer) Size() uint32 {
 	return addrSize
 }
 
+func (self *Pointer) String() string {
+	return "*" + self.Type.String()
+}
+
 const addrSize = 4

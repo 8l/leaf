@@ -2,26 +2,30 @@ package types
 
 import (
 	"bytes"
+	"io"
 )
 
-func Marshall(t Type) []byte {
-	w := newWriter()
+func Marsh(t Type) []byte {
+	buf := new(bytes.Buffer)
+	w := newWriter(buf)
 	w.write(t)
-	return w.Bytes()
+	return buf.Bytes()
 }
 
 type writer struct {
-	*bytes.Buffer
+	io.ByteWriter
 }
 
-func newWriter() *writer {
+func newWriter(w io.ByteWriter) *writer {
 	ret := new(writer)
-	ret.Buffer = new(bytes.Buffer)
+	ret.ByteWriter = w
 	return ret
 }
 
 func (self *writer) writeStr(s string) {
-	self.WriteString(s)
+	for _, b := range []byte(s) {
+		self.WriteByte(b)
+	}
 	self.WriteByte(0)
 }
 

@@ -2,14 +2,15 @@ package main
 
 import (
 	"e8vm.net/leaf/ir"
+	"e8vm.net/leaf/ir/types"
 )
 
 func mainTest(_ []string) {
 	b := ir.NewBuild()
 	p := b.NewPackage("p")
 	file := p.NewFile("a.leaf")
-	typ := p.NewFuncType()
-	fn := file.DeclareFunc("main", p.TypeRef(typ))
+	typ := new(types.Func)
+	fn := file.DeclareFunc("main", typ)
 
 	seg := fn.Define()
 	v1 := seg.Number(42)

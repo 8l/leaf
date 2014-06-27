@@ -1,12 +1,16 @@
 package ir
 
+import (
+	"e8vm.net/leaf/ir/types"
+)
+
 type File struct {
 	name    string
 	pack    *Package
 	imports map[string]int
 }
 
-func (self *File) DeclareFunc(name string, t TypeRef) *Func {
+func (self *File) DeclareFunc(name string, t types.Type) *Func {
 	ret := new(Func)
 	ret.name = name
 	ret.t = t
