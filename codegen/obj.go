@@ -9,3 +9,5 @@ type obj struct {
 	o ir.Obj
 	t types.Type
 }
+
+var voidObj *obj = new(obj)

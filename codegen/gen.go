@@ -18,6 +18,7 @@ type Gener struct {
 
 	fileTrees []*ast.Program
 	files     []*ir.File
+	funcs     []*funcGen
 }
 
 func NewGener(path string, build *ir.Build) *Gener {
@@ -43,7 +44,7 @@ func (self *Gener) Gen() {
 
 	// first round, we register all the symbols
 	for i, ftree := range self.fileTrees {
-		self.symCheck(self.files[i], ftree)
+		self.symDecl(self.files[i], ftree)
 	}
 
 	// TODO: then we should resolve all the types and constants
@@ -52,7 +53,12 @@ func (self *Gener) Gen() {
 	// third round, can now declare all the functions
 	// at this point, all named types should be resolvable
 	for i, ftree := range self.fileTrees {
-		self.genCode(self.files[i], ftree)
+		self.funcDecl(self.files[i], ftree)
+	}
+
+	// and finally, generate all the function bodies
+	for i, ftree := range self.fileTrees {
+		self.funcGen(self.files[i], ftree)
 	}
 }
 
@@ -71,7 +77,11 @@ func (self *Gener) errorf(t *lexer.Token, f string, args ...interface{}) {
 	panic("todo")
 }
 
-func (self *Gener) symCheck(f *ir.File, prog *ast.Program) {
+func (self *Gener) errore(t *lexer.Token, e error) {
+	self.errorf(t, "%s", e.Error())
+}
+
+func (self *Gener) symDecl(f *ir.File, prog *ast.Program) {
 	for _, d := range prog.Decls {
 		switch d := d.(type) {
 		case *ast.Func:
@@ -91,15 +101,7 @@ func (self *Gener) symCheck(f *ir.File, prog *ast.Program) {
 	}
 }
 
-func (self *Gener) genCode(file *ir.File, prog *ast.Program) {
-	type funcGen struct {
-		fn   *ir.Func
-		node *ast.Func
-	}
-
-	// declare all the functions
-	var funcs []*funcGen
-
+func (self *Gener) funcDecl(file *ir.File, prog *ast.Program) {
 	for _, d := range prog.Decls {
 		f, isFunc := d.(*ast.Func)
 		if !isFunc {
@@ -113,16 +115,16 @@ func (self *Gener) genCode(file *ir.File, prog *ast.Program) {
 		ft := types.NewFunc(retType)
 
 		fn, _ := file.DeclNewFunc(f.Name, ft)
-		funcs = append(funcs, &funcGen{fn, f})
+		self.funcs = append(self.funcs, &funcGen{fn, f})
 	}
 
 	// TODO: now declare all the variables
 	// and also add anonymous init functions
+}
 
-	// BUG: need to decl are funcs first, and then generate the code
-
+func (self *Gener) funcGen(file *ir.File, prog *ast.Program) {
 	// now generate all the func generate jobs
-	for _, job := range funcs {
+	for _, job := range self.funcs {
 		self.genFunc(job.fn, job.node)
 	}
 }
@@ -165,14 +167,51 @@ func (self *Gener) genExpr(code *ir.Code, expr ast.Node) *obj {
 	default:
 		panic("bug or todo")
 	case *ast.CallExpr:
+		f := self.genExpr(code, expr.Func) // evaluate the function first
+		if f == nil {
+			return nil
+		}
+
+		ft, isFunc := f.t.(*types.Func)
+		if !isFunc {
+			self.errorf(expr.Token, "calling on a non-function")
+			return nil
+		}
+
+		if len(expr.Args) != len(ft.Args) {
+			self.errorf(expr.Token, "wrong number of arguments")
+			return nil
+		}
+
 		var args []*obj
-		for _, arg := range expr.Args {
+		for i, arg := range expr.Args {
 			o := self.genExpr(code, arg)
+			if o == nil {
+				return nil
+			}
+			if !types.Equals(o.t, ft.Args[i]) {
+				self.errorf(expr.Token, "wrong argument type")
+				return nil
+			}
 			args = append(args, o)
 		}
-		// TODO: push the args if nothing is error
 
-		return nil // TODO:
+		// TODO: push the ret first
+		ret := voidObj
+
+		for _, o := range args {
+			code.Push(o.o) // now we can push the stuff for call
+		}
+
+		code.Call(f)
+
+		var pops []ir.Obj
+		for _, o := range args {
+			pops = append(pops, o.o)
+		}
+		code.Pop(pops...)
+
+		return ret
 	case *ast.Operand:
 		return self.genOperand(code, expr)
 	}
@@ -186,18 +225,20 @@ func (self *Gener) genOperand(code *ir.Code, op *ast.Operand) *obj {
 		panic("bug or todo")
 
 	case token.Int:
+		// TODO: use real large integers
 		i, e := strconv.ParseInt(tok.Lit, 0, 64)
 		if e != nil {
-			self.errorf(tok, "invalid int: %s", e.Error())
+			self.errore(tok, e)
 			return nil
 		}
-
 		return &obj{ir.ConstNum(i), types.ConstNum}
-
 	case token.Char:
-		// parse the char and return an immediate obj
-		panic("todo")
-
+		c, e := unquoteChar(tok.Lit)
+		if e != nil {
+			self.errore(tok, e)
+			return nil
+		}
+		return &obj{ir.ConstInt(int64(c), types.Int8), types.Int8}
 	case token.Ident:
 		return self.genIdent(code, tok)
 	}

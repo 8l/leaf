@@ -7,6 +7,8 @@ import (
 type CallExpr struct {
 	Func Node
 	Args []Node
+
+	Token *lexer.Token
 }
 
 type Operand struct {
