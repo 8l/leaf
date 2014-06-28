@@ -15,16 +15,16 @@ func mainTest(_ []string) {
 	fn, _ := file.DeclNewFunc("main", types.NewFunc(nil))
 
 	c := fn.Define()
-	i := c.Push(ir.ConstInt(int64('E'), types.Uint8))
+	i := c.Push(ir.Const(int64('E'), types.Uint8))
 	pch := c.QueryObj("printChar")
 	c.Call(pch)
 	c.Pop(i)
 
-	i = c.Push(ir.ConstInt(int64('8'), types.Uint8))
+	i = c.Push(ir.Const(int64('8'), types.Uint8))
 	c.Call(pch)
 	c.Pop(i)
 
-	i = c.Push(ir.ConstInt(int64('\n'), types.Uint8))
+	i = c.Push(ir.Const(int64('\n'), types.Uint8))
 	c.Call(pch)
 	c.Pop(i)
 

@@ -23,13 +23,8 @@ type HeapObj struct {
 	Addr, Len uint32
 }
 
-func ConstNum(i int64) Imm {
-	return Imm{i, types.ConstNum}
-}
-
-func ConstInt(i int64, t types.Basic) Imm {
+func Const(i int64, t types.Basic) Imm {
 	assert(t != types.Float64)
-	assert(t != types.ConstNum)
 
 	return Imm{i, t}
 }

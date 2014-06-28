@@ -5,7 +5,7 @@ import (
 	"e8vm.net/leaf/parser/ast"
 )
 
-type funcGen struct {
+type task struct {
 	fn   *ir.Func
 	node *ast.Func
 }

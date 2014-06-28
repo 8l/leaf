@@ -1,6 +1,7 @@
 package codegen
 
 import (
+	"math"
 	"strconv"
 
 	"e8vm.net/leaf/ir"
@@ -69,6 +70,10 @@ func (self *Gen) genCall(code *ir.Code, call *ast.CallExpr) *obj {
 	return ret
 }
 
+func makeConst(i int64, t types.Basic) *obj {
+	return &obj{ir.Const(i, t), t}
+}
+
 func (self *Gen) genOperand(code *ir.Code, op *ast.Operand) *obj {
 	tok := op.Token
 
@@ -83,14 +88,26 @@ func (self *Gen) genOperand(code *ir.Code, op *ast.Operand) *obj {
 			self.errore(tok, e)
 			return nil
 		}
-		return &obj{ir.ConstNum(i), types.ConstNum}
+		if i < math.MinInt32 {
+			self.errorf(tok, "integer %d is too small")
+			return nil
+		} else if i > math.MaxUint32 {
+			self.errorf(tok, "integer %d is too big")
+			return nil
+		} else if i >= math.MinInt32 && i <= math.MaxInt32 {
+			return makeConst(i, types.Int32)
+		} else {
+			assert(i > math.MaxInt32 && i <= math.MaxUint32)
+			return makeConst(i, types.Uint32)
+		}
+
 	case token.Char:
 		c, e := unquoteChar(tok.Lit)
 		if e != nil {
 			self.errore(tok, e)
 			return nil
 		}
-		return &obj{ir.ConstInt(int64(c), types.Int8), types.Int8}
+		return makeConst(int64(c), types.Int8)
 	case token.Ident:
 		return self.genIdent(code, tok)
 	}

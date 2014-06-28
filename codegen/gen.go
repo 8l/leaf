@@ -17,7 +17,7 @@ type Gen struct {
 
 	fileTrees []*ast.Program
 	files     []*ir.File
-	funcs     []*funcGen
+	tasks     []*task
 	errors    []error
 }
 
@@ -50,7 +50,7 @@ func (self *Gen) Gen() []error {
 		return self.errors
 	}
 
-	// TODO: then we should resolve all the types and constants
+	// TODO: second round, we resolve all the types and constants
 	// in some proper order
 
 	// third round, can now declare all the functions
@@ -127,7 +127,7 @@ func (self *Gen) funcDecl(file *ir.File, prog *ast.Program) {
 		ft := types.NewFunc(retType)
 
 		fn, _ := file.DeclNewFunc(f.Name, ft)
-		self.funcs = append(self.funcs, &funcGen{fn, f})
+		self.tasks = append(self.tasks, &task{fn, f})
 	}
 
 	// TODO: now declare all the variables
@@ -136,7 +136,7 @@ func (self *Gen) funcDecl(file *ir.File, prog *ast.Program) {
 
 func (self *Gen) funcGen(file *ir.File, prog *ast.Program) {
 	// now generate all the func generate jobs
-	for _, job := range self.funcs {
+	for _, job := range self.tasks {
 		self.defineFunc(job.fn, job.node)
 	}
 }
