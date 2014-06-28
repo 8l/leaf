@@ -29,7 +29,6 @@ func makeBuiltIn() *Package {
 
 	def("putc", types.NewFunc(nil, types.Int8), _printChar)
 	def("printChar", types.NewFunc(nil, types.Int8), _printChar)
-	def("printInt", types.NewFunc(nil, types.Int32), _printInt)
 
 	return p
 }
@@ -42,12 +41,6 @@ func _printChar(f *Func) {
 	c.bne(2, 0, -2)          // keep pulling if not ready
 	c.sb(1, 0, vm.Stdout)    // write the byte out
 
-	c.Return()
-}
-
-func _printInt(f *Func) {
-	c := f.Define()
-	// TODO
 	c.Return()
 }
 
