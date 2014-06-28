@@ -39,7 +39,7 @@ func mainBuild(args []string) {
 		os.Exit(-1)
 	}
 
-	build.Build("e8", fout, os.Stderr)
+	build.Build(pname, fout, os.Stderr)
 	e = fout.Close()
 	if e != nil {
 		printError(e)

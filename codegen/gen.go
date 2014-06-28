@@ -217,7 +217,7 @@ func (self *Gen) genExpr(code *ir.Code, expr ast.Node) *obj {
 			code.Push(o.o) // now we can push the stuff for call
 		}
 
-		code.Call(f)
+		code.Call(f.o)
 
 		var pops []ir.Obj
 		for _, o := range args {
