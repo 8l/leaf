@@ -3,6 +3,7 @@ package ir
 import (
 	"e8vm.net/e8/inst"
 	sym "e8vm.net/leaf/ir/symbol"
+	"e8vm.net/leaf/ir/types"
 )
 
 type Code struct {
@@ -36,20 +37,25 @@ func (self *Code) ExitScope() {
 	self.table.PopScope()
 }
 
-func (self *Code) Query(name string) Obj {
+func (self *Code) Query(name string) (Obj, types.Type) {
 	s := self.table.Get(name)
 	if s == nil {
-		return nil
+		return nil, nil
 	}
 
 	switch s.Class() {
 	case sym.Func:
 		// must be a top function declaration
 		f := s.Obj().(*Func)
-		return &Sym{f.file.pack.path, f.name}
+		return &Sym{f.file.pack.path, f.name}, f.t
 	default:
 		panic("todo")
 	}
+}
+
+func (self *Code) QueryObj(name string) Obj {
+	ret, _ := self.Query(name)
+	return ret
 }
 
 func (self *Code) fetchArg(size int16) StackObj {
@@ -103,7 +109,8 @@ func (self *Code) Push(o Obj) StackObj {
 
 	switch o := o.(type) {
 	case Imm:
-		self.loadi(1, uint32(o))
+		// no matter what int type it is, just load it
+		self.loadi(1, uint32(o.Value))
 		return self.pushReg(1)
 	case *Sym:
 		self.loadiSym(1, o)

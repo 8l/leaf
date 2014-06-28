@@ -1,6 +1,8 @@
 package codegen
 
 import (
+	"strconv"
+
 	"e8vm.net/leaf/ir"
 	"e8vm.net/leaf/ir/symbol"
 	"e8vm.net/leaf/ir/types"
@@ -182,19 +184,33 @@ func (self *Gener) genOperand(code *ir.Code, op *ast.Operand) *obj {
 	switch tok.Token {
 	default:
 		panic("bug or todo")
+
 	case token.Int:
-		// parse the int and return an immediate obj
-		panic("todo")
+		i, e := strconv.ParseInt(tok.Lit, 0, 64)
+		if e != nil {
+			self.errorf(tok, "invalid int: %s", e.Error())
+			return nil
+		}
+
+		return &obj{ir.ConstNum(i), types.ConstNum}
 
 	case token.Char:
 		// parse the char and return an immediate obj
 		panic("todo")
 
 	case token.Ident:
-		return self.genIdent(code, tok.Lit)
+		return self.genIdent(code, tok)
 	}
 }
 
-func (self *Gener) genIdent(code *ir.Code, ident string) *obj {
-	panic("todo")
+func (self *Gener) genIdent(code *ir.Code, tok *lexer.Token) *obj {
+	assert(tok.Token == token.Ident)
+
+	o, t := code.Query(tok.Lit)
+	if o == nil {
+		self.errorf(tok, "%q undefined", tok.Lit)
+		return nil
+	}
+
+	return &obj{o, t}
 }

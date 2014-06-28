@@ -8,6 +8,8 @@ const (
 	Int8
 	Uint8
 	Float64
+
+	ConstNum
 )
 
 func (self Basic) Size() uint32 {
@@ -24,10 +26,11 @@ func (self Basic) Size() uint32 {
 }
 
 var basicNames = map[Basic]string{
-	Int32:  "int",
-	Uint32: "uint",
-	Int8:   "char",
-	Uint8:  "byte",
+	Int32:    "int",
+	Uint32:   "uint",
+	Int8:     "char",
+	Uint8:    "byte",
+	ConstNum: "<const>",
 }
 
 func (self Basic) String() string {

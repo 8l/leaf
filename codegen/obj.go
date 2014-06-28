@@ -6,6 +6,6 @@ import (
 )
 
 type obj struct {
-	o *ir.Obj
+	o ir.Obj
 	t types.Type
 }
