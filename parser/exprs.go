@@ -56,7 +56,6 @@ func (p *Parser) parseCall(f ast.Node) ast.Node {
 		p.skipUntil(t.Rparen)
 	}
 
-
 	return ret
 }
 
