@@ -53,10 +53,7 @@ func (self *Build) importPackage(path string) *Package {
 func (self *Build) Build(p string, fout, ferr io.Writer) []error {
 	linker := newLinker()
 
-	c := new(Code)
-	c.loadi(regSP, stackStart) // init the stack pointer
-	c.jalSym(&Sym{p, "main"})  // jump to the main function
-	c.sb(0, 0, ioHalt)         // halt the VM
+	c := makeEntry(p)
 
 	linker.addCode(Sym{"", "entry"}, c)
 

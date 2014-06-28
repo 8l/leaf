@@ -1,1 +1,1 @@
-../check.mk
+../make.mk
