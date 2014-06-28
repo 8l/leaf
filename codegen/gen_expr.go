@@ -82,7 +82,6 @@ func (self *Gen) genOperand(code *ir.Code, op *ast.Operand) *obj {
 		panic("bug or todo")
 
 	case token.Int:
-		// TODO: use real large integers
 		i, e := strconv.ParseInt(tok.Lit, 0, 64)
 		if e != nil {
 			self.errore(tok, e)
@@ -108,6 +107,7 @@ func (self *Gen) genOperand(code *ir.Code, op *ast.Operand) *obj {
 			return nil
 		}
 		return makeConst(int64(c), types.Int8)
+
 	case token.Ident:
 		return self.genIdent(code, tok)
 	}
