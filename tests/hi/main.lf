@@ -1,5 +1,9 @@
-func main() {
+func hi() {
     printChar('h')
     printChar('i')
     printChar('\n')
+}
+
+func main() {
+    hi()
 }

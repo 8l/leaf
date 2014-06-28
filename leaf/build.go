@@ -31,7 +31,7 @@ func mainBuild(args []string) {
 		os.Exit(-1)
 	}
 
-	build.Print()
+	// build.Print()
 
 	fout, e := os.Create("out.e8")
 	if e != nil {

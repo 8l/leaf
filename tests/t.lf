@@ -1,13 +1,4 @@
 func main() {
-
-}
-
-func empty() {
-    // another empty function
-}
-
-func f() { a(37) }
-
-func a() {
-    ;
+	printChar('x')
+	printChar('\n')
 }

@@ -1,5 +1,9 @@
 .PHONY: check build lex parse
 
+run:
+	leaf build *.lf
+	e8 out.e8
+
 check:
 	leaf lex main.lf | diff - lex.result
 	leaf parse main.lf | diff - parse.result

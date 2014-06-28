@@ -1,9 +1,14 @@
-.PHONY: parse ast
+.PHONY: check build lex parse
 
-all: parse ast
+run:
+	leaf build *.lf
+	e8 out.e8
+
+lex:
+	leaf lex main.lf
 
 parse:
-	leaf parse *.lf
+	leaf parse main.lf
 
 ast:
-	leaf parse -ast *.lf
+	leaf parse -ast main.lf

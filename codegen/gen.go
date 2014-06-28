@@ -106,8 +106,8 @@ func (self *Gen) symDecl(f *ir.File, prog *ast.Program) {
 			}
 			old := self.tryAddDecl(f, newDecl)
 			if old != nil {
-				self.errorf(newDecl.pos, "%s redeclared")
-				self.errorf(old.pos, "   previously declared here")
+				self.errorf(newDecl.pos, "%q redeclared", newDecl.name)
+				self.errorf(old.pos, "    previously declared here")
 			}
 		default:
 			panic("bug or todo")

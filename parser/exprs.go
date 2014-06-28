@@ -37,6 +37,7 @@ func (p *Parser) parseCall(f ast.Node) ast.Node {
 
 	ret := new(ast.CallExpr)
 	ret.Func = f
+	ret.Token = p.last
 
 	for p.until(t.Rparen) {
 		arg := p.parseExpr()
@@ -54,6 +55,7 @@ func (p *Parser) parseCall(f ast.Node) ast.Node {
 	if !p.expect(t.Rparen) {
 		p.skipUntil(t.Rparen)
 	}
+
 
 	return ret
 }
