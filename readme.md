@@ -26,3 +26,12 @@ compiling might be slow, and the assembly generated won't be beautiful.
 ### News
 
 - `2014.6.28` We can compile and run basic hello world now!! Finally!
+
+### TODO
+
+- Write a testing framework
+- Variable Declaring
+- Operator Expressions
+- Boolean Type
+- If statement
+- Simple for statement // similar to while
