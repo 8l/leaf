@@ -1,7 +1,7 @@
 package codegen
 
-func assert(cond bool) {
-	if !cond {
+func assert(c bool) {
+	if !c {
 		panic("bug")
 	}
 }

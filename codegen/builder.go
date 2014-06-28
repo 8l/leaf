@@ -1,211 +1,200 @@
 package codegen
 
 import (
-	"fmt"
-	"strconv"
-
-	"e8vm.net/leaf/codegen/exprs"
-	"e8vm.net/leaf/codegen/symbol"
-	"e8vm.net/leaf/codegen/types"
+	"e8vm.net/leaf/ir"
+	"e8vm.net/leaf/ir/symbol"
+	"e8vm.net/leaf/ir/types"
 	"e8vm.net/leaf/lexer"
 	"e8vm.net/leaf/lexer/token"
 	"e8vm.net/leaf/parser/ast"
 )
 
-type Builder struct {
-	prog   *ast.Program
-	scope  *symbol.Scope // package level symbols
-	table  *symbol.Table
-	syms   []symbol.Symbol
-	errors []error
-	object *Object
+type Gener struct {
+	build *ir.Build
+	pack  *ir.Package
+	decls map[string]*decl // top level declares
+
+	fileTrees []*ast.Program
+	files     []*ir.File
 }
 
-func NewBuilder(p *ast.Program) *Builder {
-	ret := new(Builder)
-	ret.prog = p
-	ret.scope = symbol.NewScope()
-	ret.table = symbol.NewTable()
-	// ret.table.Push(builtin)
-	// ret.table.Push(ret.scope)
+func NewGener(path string, build *ir.Build) *Gener {
+	ret := new(Gener)
+	ret.build = build
+	ret.pack = build.NewPackage(path)
+	ret.decls = make(map[string]*decl)
 
 	return ret
 }
 
-func (self *Builder) errorf(t *lexer.Token, f string, args ...interface{}) {
-	e := lexer.MakeError(t, fmt.Errorf(f, args...))
-	self.errors = append(self.errors, e)
+func (self *Gener) AddFile(p *ast.Program) {
+	self.fileTrees = append(self.fileTrees, p)
 }
 
-func (self *Builder) hasError() bool {
-	return len(self.errors) > 0
-}
+func (self *Gener) Gen() {
+	for _, ftree := range self.fileTrees {
+		f := self.pack.NewFile(ftree.Filename)
+		// TODO: register imports here
+		self.files = append(self.files, f)
+	}
+	assert(len(self.files) == len(self.fileTrees))
 
-// Returns IR code with symbol table
-func (self *Builder) Build() (*Object, []error) {
-	self.object = new(Object)
-
-	self.syms = self.register()
-
-	// now that all the symbols are registered
-	// this is only layout names
-
-	// self.layout() // TODO: evaluate consts and types,
-
-	// TODO: we also need to figure out the types of the vars
-	// we could require that a variable must declare a type first here
-	// rather than detecting the type based on the expression
-	// and the function signatures
-	// this will be just type building on sized arrays and structs
-	// for now, we can just move on
-
-	self.gen()
-
-	return self.object, self.errors
-}
-
-func (self *Builder) gen() {
-	if self.hasError() {
-		return
+	// first round, we register all the symbols
+	for i, ftree := range self.fileTrees {
+		self.symCheck(self.files[i], ftree)
 	}
 
-	for _, decl := range self.prog.Decls {
-		switch decl := decl.(type) {
+	// TODO: then we should resolve all the types and constants
+	// in some proper order
+
+	// third round, can now declare all the functions
+	// at this point, all named types should be resolvable
+	for i, ftree := range self.fileTrees {
+		self.genCode(self.files[i], ftree)
+	}
+}
+
+func (self *Gener) tryAddDecl(f *ir.File, newDecl *decl) *decl {
+	name := newDecl.name
+	old := self.decls[name]
+	if old != nil {
+		return old
+	}
+
+	self.decls[name] = newDecl
+	return nil
+}
+
+func (self *Gener) errorf(t *lexer.Token, f string, args ...interface{}) {
+	panic("todo")
+}
+
+func (self *Gener) symCheck(f *ir.File, prog *ast.Program) {
+	for _, d := range prog.Decls {
+		switch d := d.(type) {
 		case *ast.Func:
-			self.genFunc(decl)
+			newDecl := &decl{
+				class: symbol.Func,
+				name:  d.Name,
+				pos:   d.NameToken,
+			}
+			old := self.tryAddDecl(f, newDecl)
+			if old != nil {
+				self.errorf(newDecl.pos, "%s redeclared")
+				self.errorf(old.pos, "   previously declared here")
+			}
+		default:
+			panic("bug or todo")
 		}
 	}
 }
 
-func (self *Builder) genFunc(f *ast.Func) {
-	// TODO: we should probably have an ir here
-	// but for now, we will just write the assembly out directly
-	// calling convention:
-	// $30 is return address
-	// $29 is stack pointer
+func (self *Gener) genCode(file *ir.File, prog *ast.Program) {
+	type funcGen struct {
+		fn   *ir.Func
+		node *ast.Func
+	}
 
-	scope := symbol.NewScope()
-	// define the named args here
-	self.table.PushScope(scope)
-	self.genBlock(f.Block)
-	self.table.PopScope()
+	// declare all the functions
+	var funcs []*funcGen
+
+	for _, d := range prog.Decls {
+		f, isFunc := d.(*ast.Func)
+		if !isFunc {
+			continue
+		}
+
+		// build the func type
+		assert(len(f.Args) == 0) // TODO
+		assert(f.Ret == nil)
+		var retType types.Type
+		ft := types.NewFunc(retType)
+
+		fn, _ := file.DeclNewFunc(f.Name, ft)
+		funcs = append(funcs, &funcGen{fn, f})
+	}
+
+	// TODO: now declare all the variables
+	// and also add anonymous init functions
+
+	// BUG: need to decl are funcs first, and then generate the code
+
+	// now generate all the func generate jobs
+	for _, job := range funcs {
+		self.genFunc(job.fn, job.node)
+	}
 }
 
-// Generates a block with its own scope
-func (self *Builder) genBlock(b *ast.Block) {
-	scope := symbol.NewScope()
-	self.table.PushScope(scope)
+func (self *Gener) genFunc(f *ir.Func, node *ast.Func) {
+	code := f.Define() // build up the header
+
+	code.EnterScope()
+	// TODO: register the named args here
+
+	self.genBlock(code, node.Block)
+	code.ExitScope()
+
+	code.Return() // always append a return at the end, just for safety
+}
+
+func (self *Gener) genBlock(code *ir.Code, b *ast.Block) {
+	code.EnterScope()
 
 	for _, stmt := range b.Stmts {
-		self.genStmt(stmt)
+		self.genStmt(code, stmt)
 	}
 
-	self.table.PopScope()
+	code.ExitScope()
 }
 
-// Generate a statement
-func (self *Builder) genStmt(node ast.Node) {
-	switch stmt := node.(type) {
+func (self *Gener) genStmt(code *ir.Code, s ast.Node) {
+	switch s := s.(type) {
+	default:
+		panic("bug or todo")
 	case *ast.EmptyStmt:
 		return
-	case *ast.Block:
-		self.genBlock(stmt)
 	case *ast.ExprStmt:
-		self.genExpr(stmt.Expr)
-	default:
-		panic("bug")
+		self.genExpr(code, s.Expr)
 	}
 }
 
-func (self *Builder) genOperand(op *ast.Operand) exprs.Expr {
-	t := op.Token
-	switch t.Token {
-	case token.Ident:
-		return self.genIdent(t.Lit)
-
-	case token.Int:
-		lit := t.Lit
-		i, e := strconv.ParseInt(lit, 0, 64)
-		if e != nil {
-			self.errorf(t, "illegal integer; %s", e)
-			return exprs.Err
-		}
-
-		ret := new(exprs.Int)
-		ret.Value = i
-		return ret
-
+func (self *Gener) genExpr(code *ir.Code, expr ast.Node) *obj {
+	switch expr := expr.(type) {
 	default:
-		panic("bug (or todo)")
-	}
-}
-
-func (self *Builder) genIdent(s string) exprs.Expr {
-	sym := self.table.Get(s)
-
-	switch sym := sym.(type) {
-	case *types.Named:
-		ret := new(exprs.TypeCast)
-		ret.Type = sym
-		return ret
-	case *function:
-		panic("todo") // this is a named function
-	default:
-		panic("bug (or todo)")
-	}
-}
-
-func (self *Builder) genExpr(node ast.Node) exprs.Expr {
-	switch expr := node.(type) {
+		panic("bug or todo")
 	case *ast.CallExpr:
-		args := make([]exprs.Expr, len(expr.Args))
-		for i, arg := range expr.Args {
-			args[i] = self.genExpr(arg)
+		var args []*obj
+		for _, arg := range expr.Args {
+			o := self.genExpr(code, arg)
+			args = append(args, o)
 		}
-		// f := self.genExpr(expr.Func)
+		// TODO: push the args if nothing is error
 
-		// TODO: push the args on stack
-		// and call the function
-		// pop the args and save the result on stack
-		return nil
+		return nil // TODO:
 	case *ast.Operand:
-		return self.genOperand(expr)
-	default:
-		panic("bug")
+		return self.genOperand(code, expr)
 	}
 }
 
-func (self *Builder) register() []symbol.Symbol {
-	if self.hasError() {
-		return nil
+func (self *Gener) genOperand(code *ir.Code, op *ast.Operand) *obj {
+	tok := op.Token
+
+	switch tok.Token {
+	default:
+		panic("bug or todo")
+	case token.Int:
+		// parse the int and return an immediate obj
+		panic("todo")
+
+	case token.Char:
+		// parse the char and return an immediate obj
+		panic("todo")
+
+	case token.Ident:
+		return self.genIdent(code, tok.Lit)
 	}
-	var ret []symbol.Symbol
+}
 
-	for _, decl := range self.prog.Decls {
-		var s symbol.Symbol
-
-		switch decl := decl.(type) {
-		case *ast.Func:
-			s = newFunc(decl.NameToken)
-		default:
-			panic("bug: unknown decl in ast")
-		}
-
-		var pre symbol.Symbol
-		if s.Name() == "_" {
-			// an anonymous top symbol
-			ret = append(ret, s)
-		} else {
-			pre = self.scope.Register(s)
-			if pre != nil {
-				name := s.Name()
-				self.errorf(s.Token(), "%q already declared", name)
-				self.errorf(pre.Token(), "   %q previously declared here", name)
-			} else {
-				ret = append(ret, s)
-			}
-		}
-	}
-
-	return ret
+func (self *Gener) genIdent(code *ir.Code, ident string) *obj {
+	panic("todo")
 }

@@ -12,8 +12,7 @@ func mainTest(_ []string) {
 
 	p := b.NewPackage("e8")
 	file := p.NewFile("e8.leaf")
-	fn := file.NewFunc("main", types.NewFunc(nil))
-	file.DeclFunc(fn)
+	fn, _ := file.DeclNewFunc("main", types.NewFunc(nil))
 
 	c := fn.Define()
 	i := c.Push(ir.Imm(uint8('E')))

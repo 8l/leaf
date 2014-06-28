@@ -8,7 +8,7 @@ import (
 type File struct {
 	name    string
 	pack    *Package
-	imports map[string]int
+	imports map[string]int // TODO
 }
 
 func (self *File) NewFunc(name string, t *types.Func) *Func {
@@ -21,6 +21,12 @@ func (self *File) NewFunc(name string, t *types.Func) *Func {
 
 func (self *File) DeclFunc(f *Func) *sym.Symbol {
 	return self.pack.declFunc(f)
+}
+
+func (self *File) DeclNewFunc(n string, t *types.Func) (*Func, *sym.Symbol) {
+	f := self.NewFunc(n, t)
+	s := self.DeclFunc(f)
+	return f, s
 }
 
 func (self *File) DeclType(name string, t types.Type) *sym.Symbol {

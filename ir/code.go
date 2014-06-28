@@ -28,6 +28,14 @@ func (self *Code) Size() uint32 {
 	return uint32(len(self.insts)) * 4
 }
 
+func (self *Code) EnterScope() {
+	self.table.PushScope(sym.NewScope())
+}
+
+func (self *Code) ExitScope() {
+	self.table.PopScope()
+}
+
 func (self *Code) Query(name string) Obj {
 	s := self.table.Get(name)
 	if s == nil {
