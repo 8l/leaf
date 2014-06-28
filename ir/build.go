@@ -50,17 +50,6 @@ func (self *Build) importPackage(path string) *Package {
 	panic("todo")
 }
 
-const (
-	segSize = (1 << 32) / 4
-)
-
-const (
-	ioStart uint32 = segSize * iota
-	codeStart
-	heapStart
-	stackStart
-)
-
 func (self *Build) Build(p string, fout, ferr io.Writer) []error {
 	linker := newLinker()
 
