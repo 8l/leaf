@@ -73,13 +73,15 @@ func (self *Code) loadi(reg uint8, i uint32) {
 	up := uint16(i >> 16)
 	if up != 0 {
 		self.lui(reg, uint16(i>>16))
+		self.addi(reg, reg, int16(uint16(i)))
+	} else {
+		self.addi(reg, 0, int16(uint16(i)))
 	}
-	self.addi(reg, 0, int16(uint16(i)))
 }
 
 func (self *Code) loadiSym(reg uint8, sym *Sym) {
 	self.luiSym(reg, sym)
-	self.addiSym(reg, 0, sym)
+	self.addiSym(reg, reg, sym)
 }
 
 func (self *Code) jSym(sym *Sym) {

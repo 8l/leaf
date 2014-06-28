@@ -1,7 +1,6 @@
 package main
 
 import (
-	"bytes"
 	"os"
 
 	"e8vm.net/leaf/ir"
@@ -34,7 +33,13 @@ func mainTest(_ []string) {
 	// p.Save()
 	b.Print()
 
-	buf := new(bytes.Buffer)
-	b.Build("e8", buf, os.Stderr)
-
+	fout, e := os.Create("out.e8")
+	if e != nil {
+		panic(e)
+	}
+	b.Build("e8", fout, os.Stderr)
+	e = fout.Close()
+	if e != nil {
+		panic(e)
+	}
 }

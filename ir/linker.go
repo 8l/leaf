@@ -23,6 +23,7 @@ func newLinker() *linker {
 
 func (self *linker) addCode(s Sym, c *Code) {
 	assert(self.codeMap[s] == nil)
+	self.codes = append(self.codes, c)
 	self.codeMap[s] = c
 }
 
@@ -73,7 +74,8 @@ func (self *linker) link(out io.Writer) []error {
 					i.inst = setImm(i.inst, uint16(v>>16))
 				case inst.OpJ, inst.OpJal:
 					// TODO: check jump range
-					i.inst = inst.Jinst(op, int32(v-ptr+4))
+					pc := uint32(buf.Len()) + 4
+					i.inst = inst.Jinst(op, int32(v-pc)>>2)
 				case inst.OpRinst, inst.OpBne, inst.OpBeq:
 					panic("bug")
 				}
