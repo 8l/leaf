@@ -137,11 +137,11 @@ func (self *Gen) funcDecl(file *ir.File, prog *ast.Program) {
 func (self *Gen) funcGen(file *ir.File, prog *ast.Program) {
 	// now generate all the func generate jobs
 	for _, job := range self.funcs {
-		self.genFunc(job.fn, job.node)
+		self.defineFunc(job.fn, job.node)
 	}
 }
 
-func (self *Gen) genFunc(f *ir.Func, node *ast.Func) {
+func (self *Gen) defineFunc(f *ir.Func, node *ast.Func) {
 	code := f.Define() // build up the header
 
 	code.EnterScope()
