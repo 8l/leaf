@@ -1,6 +1,9 @@
 package main
 
 import (
+	"bytes"
+	"os"
+
 	"e8vm.net/leaf/ir"
 	"e8vm.net/leaf/ir/types"
 )
@@ -30,5 +33,8 @@ func mainTest(_ []string) {
 
 	// p.Save()
 	b.Print()
-	b.Build("e8")
+
+	buf := new(bytes.Buffer)
+	b.Build("e8", buf, os.Stderr)
+
 }

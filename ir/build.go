@@ -1,5 +1,10 @@
 package ir
 
+import (
+	"fmt"
+	"io"
+)
+
 type Build struct {
 	builtIn *Package
 
@@ -56,11 +61,27 @@ const (
 	stackStart
 )
 
-func (self *Build) Build(p string) {
+func (self *Build) Build(p string, fout, ferr io.Writer) []error {
+	linker := newLinker()
+
 	c := new(Code)
 	c.loadi(regSP, stackStart) // init the stack pointer
 	c.jalSym(&Sym{p, "main"})  // jump to the main function
 	c.sb(0, 0, ioHalt)         // halt the VM
 
-	panic(c)
+	linker.addCode(Sym{"", "entry"}, c)
+
+	for _, p := range self.packs {
+		for _, f := range p.funcs {
+			name := f.Name()
+			f := f.Obj().(*Func)
+			linker.addCode(Sym{p.path, name}, f.code)
+		}
+	}
+
+	errs := linker.link(fout)
+	for _, e := range errs {
+		fmt.Fprintln(ferr, e)
+	}
+	return errs
 }

@@ -14,6 +14,8 @@ type Code struct {
 	retAddr StackObj
 	ret     StackObj
 	args    []StackObj
+
+	start uint32 // address start
 }
 
 const (
