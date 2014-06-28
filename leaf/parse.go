@@ -12,7 +12,7 @@ import (
 
 func mainParse(args []string) {
 	fset := flag.NewFlagSet("leaf-parse", flag.ExitOnError)
-	astFlag := fset.Bool("ast", false, "print AST instead of token reduce tree")
+	astFlag := fset.Bool("ast", false, "print AST instead of token tree")
 
 	fset.Parse(args)
 
@@ -21,14 +21,6 @@ func mainParse(args []string) {
 	if len(files) == 0 {
 		fmt.Fprintln(os.Stderr, "no input file.")
 		return
-	}
-
-	printErrors := func(errs []error) {
-		if len(errs) > 0 {
-			for _, e := range errs {
-				fmt.Fprintln(os.Stderr, e)
-			}
-		}
 	}
 
 	for _, f := range files {

@@ -1,6 +1,7 @@
 package codegen
 
 import (
+	"fmt"
 	"strconv"
 
 	"e8vm.net/leaf/ir"
@@ -11,7 +12,7 @@ import (
 	"e8vm.net/leaf/parser/ast"
 )
 
-type Gener struct {
+type Gen struct {
 	build *ir.Build
 	pack  *ir.Package
 	decls map[string]*decl // top level declares
@@ -19,10 +20,11 @@ type Gener struct {
 	fileTrees []*ast.Program
 	files     []*ir.File
 	funcs     []*funcGen
+	errors    []error
 }
 
-func NewGener(path string, build *ir.Build) *Gener {
-	ret := new(Gener)
+func NewGen(path string, build *ir.Build) *Gen {
+	ret := new(Gen)
 	ret.build = build
 	ret.pack = build.NewPackage(path)
 	ret.decls = make(map[string]*decl)
@@ -30,11 +32,11 @@ func NewGener(path string, build *ir.Build) *Gener {
 	return ret
 }
 
-func (self *Gener) AddFile(p *ast.Program) {
+func (self *Gen) AddFile(p *ast.Program) {
 	self.fileTrees = append(self.fileTrees, p)
 }
 
-func (self *Gener) Gen() {
+func (self *Gen) Gen() []error {
 	for _, ftree := range self.fileTrees {
 		f := self.pack.NewFile(ftree.Filename)
 		// TODO: register imports here
@@ -46,6 +48,9 @@ func (self *Gener) Gen() {
 	for i, ftree := range self.fileTrees {
 		self.symDecl(self.files[i], ftree)
 	}
+	if len(self.errors) > 0 {
+		return self.errors
+	}
 
 	// TODO: then we should resolve all the types and constants
 	// in some proper order
@@ -55,14 +60,22 @@ func (self *Gener) Gen() {
 	for i, ftree := range self.fileTrees {
 		self.funcDecl(self.files[i], ftree)
 	}
+	if len(self.errors) > 0 {
+		return self.errors
+	}
 
 	// and finally, generate all the function bodies
 	for i, ftree := range self.fileTrees {
 		self.funcGen(self.files[i], ftree)
 	}
+	if len(self.errors) > 0 {
+		return self.errors
+	}
+
+	return self.errors
 }
 
-func (self *Gener) tryAddDecl(f *ir.File, newDecl *decl) *decl {
+func (self *Gen) tryAddDecl(f *ir.File, newDecl *decl) *decl {
 	name := newDecl.name
 	old := self.decls[name]
 	if old != nil {
@@ -73,15 +86,16 @@ func (self *Gener) tryAddDecl(f *ir.File, newDecl *decl) *decl {
 	return nil
 }
 
-func (self *Gener) errorf(t *lexer.Token, f string, args ...interface{}) {
-	panic("todo")
+func (self *Gen) errorf(t *lexer.Token, f string, args ...interface{}) {
+	e := lexer.MakeError(t, fmt.Errorf(f, args...))
+	self.errors = append(self.errors, e)
 }
 
-func (self *Gener) errore(t *lexer.Token, e error) {
+func (self *Gen) errore(t *lexer.Token, e error) {
 	self.errorf(t, "%s", e.Error())
 }
 
-func (self *Gener) symDecl(f *ir.File, prog *ast.Program) {
+func (self *Gen) symDecl(f *ir.File, prog *ast.Program) {
 	for _, d := range prog.Decls {
 		switch d := d.(type) {
 		case *ast.Func:
@@ -101,7 +115,7 @@ func (self *Gener) symDecl(f *ir.File, prog *ast.Program) {
 	}
 }
 
-func (self *Gener) funcDecl(file *ir.File, prog *ast.Program) {
+func (self *Gen) funcDecl(file *ir.File, prog *ast.Program) {
 	for _, d := range prog.Decls {
 		f, isFunc := d.(*ast.Func)
 		if !isFunc {
@@ -122,14 +136,14 @@ func (self *Gener) funcDecl(file *ir.File, prog *ast.Program) {
 	// and also add anonymous init functions
 }
 
-func (self *Gener) funcGen(file *ir.File, prog *ast.Program) {
+func (self *Gen) funcGen(file *ir.File, prog *ast.Program) {
 	// now generate all the func generate jobs
 	for _, job := range self.funcs {
 		self.genFunc(job.fn, job.node)
 	}
 }
 
-func (self *Gener) genFunc(f *ir.Func, node *ast.Func) {
+func (self *Gen) genFunc(f *ir.Func, node *ast.Func) {
 	code := f.Define() // build up the header
 
 	code.EnterScope()
@@ -141,7 +155,7 @@ func (self *Gener) genFunc(f *ir.Func, node *ast.Func) {
 	code.Return() // always append a return at the end, just for safety
 }
 
-func (self *Gener) genBlock(code *ir.Code, b *ast.Block) {
+func (self *Gen) genBlock(code *ir.Code, b *ast.Block) {
 	code.EnterScope()
 
 	for _, stmt := range b.Stmts {
@@ -151,7 +165,7 @@ func (self *Gener) genBlock(code *ir.Code, b *ast.Block) {
 	code.ExitScope()
 }
 
-func (self *Gener) genStmt(code *ir.Code, s ast.Node) {
+func (self *Gen) genStmt(code *ir.Code, s ast.Node) {
 	switch s := s.(type) {
 	default:
 		panic("bug or todo")
@@ -162,7 +176,7 @@ func (self *Gener) genStmt(code *ir.Code, s ast.Node) {
 	}
 }
 
-func (self *Gener) genExpr(code *ir.Code, expr ast.Node) *obj {
+func (self *Gen) genExpr(code *ir.Code, expr ast.Node) *obj {
 	switch expr := expr.(type) {
 	default:
 		panic("bug or todo")
@@ -217,7 +231,7 @@ func (self *Gener) genExpr(code *ir.Code, expr ast.Node) *obj {
 	}
 }
 
-func (self *Gener) genOperand(code *ir.Code, op *ast.Operand) *obj {
+func (self *Gen) genOperand(code *ir.Code, op *ast.Operand) *obj {
 	tok := op.Token
 
 	switch tok.Token {
@@ -244,7 +258,7 @@ func (self *Gener) genOperand(code *ir.Code, op *ast.Operand) *obj {
 	}
 }
 
-func (self *Gener) genIdent(code *ir.Code, tok *lexer.Token) *obj {
+func (self *Gen) genIdent(code *ir.Code, tok *lexer.Token) *obj {
 	assert(tok.Token == token.Ident)
 
 	o, t := code.Query(tok.Lit)
