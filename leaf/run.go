@@ -27,6 +27,11 @@ func mainRun(args []string) {
 	run.Stdout = os.Stdout
 	run.Run()
 
+	if len(run.Errors) > 0 {
+		printErrors(run.Errors)
+		os.Exit(1)
+	}
+
 	if !run.RIP() {
 		fmt.Printf("(ret=%d)\n", run.HaltValue)
 		if run.AddrError {

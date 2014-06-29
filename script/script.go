@@ -35,9 +35,12 @@ func (self *Run) RIP() bool {
 
 func (self *Run) err(es ...error) bool {
 	for _, e := range es {
+		if e == nil {
+			continue
+		}
 		self.Errors = append(self.Errors, e)
 	}
-	return len(self.Errors) == 0
+	return len(self.Errors) > 0
 }
 
 func (self *Run) Run() {
