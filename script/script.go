@@ -3,6 +3,7 @@ package script
 
 import (
 	"bytes"
+	"io"
 	"math"
 
 	"e8vm.net/e8/img"
@@ -13,16 +14,23 @@ import (
 )
 
 type Run struct {
-	Filename string  // file name for the input source
-	Source   []byte  // the input source file
-	Image    []byte  // the compiled E8 image file
-	Errors   []error // errors encountered
-	Output   []byte  // output of execution
-
+	// input
+	Filename     string // file name for the input source
+	Source       []byte // the input source file
+	Stdout       io.Writer
 	TimeoutCycle int
-	UsedCycle    int
-	HaltValue    uint8
-	AddrError    bool
+
+	// output
+	Image     []byte  // the compiled E8 image file
+	Errors    []error // errors encountered
+	Output    []byte  // output of execution
+	UsedCycle int
+	HaltValue uint8
+	AddrError bool
+}
+
+func (self *Run) RIP() bool {
+	return self.HaltValue == 0 && !self.AddrError
 }
 
 func (self *Run) err(es ...error) bool {
@@ -63,12 +71,23 @@ func (self *Run) Run() {
 		return
 	}
 
+	stdoutBuf := new(bytes.Buffer)
+	var stdout io.Writer = stdoutBuf
+	if self.Stdout != nil {
+		stdout = io.MultiWriter(stdout, self.Stdout)
+	}
+
 	vm.SetPC(mem.SegCode)
+	vm.Stdout = stdout
+
 	if self.TimeoutCycle == 0 {
 		self.TimeoutCycle = math.MaxInt64
 	}
-	self.UsedCycle = vm.Run(self.TimeoutCycle)
 
+	ncycle := vm.Run(self.TimeoutCycle)
+
+	self.UsedCycle = ncycle
 	self.HaltValue = vm.HaltValue()
 	self.AddrError = vm.AddrError()
+	self.Output = stdoutBuf.Bytes()
 }
