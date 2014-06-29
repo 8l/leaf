@@ -1,7 +1,6 @@
 package ir
 
 import (
-	"fmt"
 	"io"
 )
 
@@ -50,7 +49,7 @@ func (self *Build) importPackage(path string) *Package {
 	panic("todo")
 }
 
-func (self *Build) Build(p string, fout, ferr io.Writer) []error {
+func (self *Build) Build(p string, fout io.Writer) []error {
 	linker := newLinker()
 
 	c := makeEntry(p)
@@ -66,8 +65,5 @@ func (self *Build) Build(p string, fout, ferr io.Writer) []error {
 	}
 
 	errs := linker.link(fout)
-	for _, e := range errs {
-		fmt.Fprintln(ferr, e)
-	}
 	return errs
 }

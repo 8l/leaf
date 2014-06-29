@@ -28,7 +28,7 @@ func mainBuild(args []string) {
 	errs := gen.Gen()
 	if len(errs) > 0 {
 		printErrors(errs)
-		os.Exit(-1)
+		os.Exit(1)
 	}
 
 	// build.Print()
@@ -36,13 +36,18 @@ func mainBuild(args []string) {
 	fout, e := os.Create("out.e8")
 	if e != nil {
 		printError(e)
-		os.Exit(-1)
+		os.Exit(1)
 	}
 
-	build.Build(pname, fout, os.Stderr)
+	errs = build.Build(pname, fout)
+	if len(errs) > 0 {
+		printErrors(errs)
+		os.Exit(1)
+	}
+
 	e = fout.Close()
 	if e != nil {
 		printError(e)
-		os.Exit(-1)
+		os.Exit(1)
 	}
 }

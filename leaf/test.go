@@ -37,7 +37,7 @@ func mainTest(_ []string) {
 	if e != nil {
 		panic(e)
 	}
-	b.Build("e8", fout, os.Stderr)
+	b.Build("e8", fout)
 	e = fout.Close()
 	if e != nil {
 		panic(e)

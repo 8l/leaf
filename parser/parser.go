@@ -1,6 +1,7 @@
 package parser
 
 import (
+	"bytes"
 	"errors"
 	"fmt"
 	"io"
@@ -32,6 +33,12 @@ func Parse(f string) (*ast.Program, []error) {
 
 func ParseStr(f string, prog string) (*ast.Program, []error) {
 	in := strings.NewReader(prog)
+	p := New(in, f)
+	return p.Parse()
+}
+
+func ParseBytes(f string, prog []byte) (*ast.Program, []error) {
+	in := bytes.NewBuffer(prog)
 	p := New(in, f)
 	return p.Parse()
 }
