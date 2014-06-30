@@ -1,5 +1,0 @@
-func main() {
-    var a = 40
-    var b = 2
-    print(a + b)
-}

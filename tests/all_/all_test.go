@@ -1,4 +1,4 @@
-package tests
+package all_
 
 import (
 	"go/build"
@@ -6,6 +6,7 @@ import (
 	"os"
 	"path/filepath"
 	"testing"
+	"strings"
 )
 
 func ne(e error) {
@@ -33,7 +34,14 @@ func listDirs() []string {
 		if !f.IsDir() {
 			continue
 		}
-		ret = append(ret, filepath.Join(p, f.Name()))
+		name := f.Name()
+		if strings.HasPrefix(name, "_") {
+			continue
+		}
+		if strings.HasSuffix(name, "_") {
+			continue
+		}
+		ret = append(ret, filepath.Join(p, name))
 	}
 
 	return ret
@@ -42,11 +50,11 @@ func listDirs() []string {
 func TestAll(t *testing.T) {
 	dirs := listDirs()
 	for _, dir := range dirs {
-		testDir(t, dir)
+		testCase(t, dir)
 	}
 }
 
-func testDir(t *testing.T, dir string) {
+func testCase(t *testing.T, dir string) {
 	src, e := ioutil.ReadFile(filepath.Join(dir, "main.l"))
 	ne(e)
 
