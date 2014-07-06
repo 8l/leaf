@@ -7,7 +7,7 @@ import (
 	"e8vm.net/leaf/ir/symbol"
 	"e8vm.net/leaf/ir/types"
 	"e8vm.net/leaf/lexer"
-	"e8vm.net/leaf/parser/ast"
+	"e8vm.net/leaf/ast"
 )
 
 type Gen struct {

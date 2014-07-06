@@ -6,7 +6,7 @@ import (
 	"os"
 
 	"e8vm.net/leaf/parser"
-	"e8vm.net/leaf/parser/ast"
+	"e8vm.net/leaf/ast"
 	"e8vm.net/leaf/prt"
 )
 

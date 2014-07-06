@@ -2,7 +2,7 @@ package parser
 
 import (
 	t "e8vm.net/leaf/lexer/token"
-	"e8vm.net/leaf/parser/ast"
+	"e8vm.net/leaf/ast"
 )
 
 func (p *Parser) parseTopDecl() ast.Node {
