@@ -2,7 +2,7 @@ package ir
 
 import (
 	"e8vm.net/leaf/ir/types"
-	"e8vm.net/leaf/prt"
+	"e8vm.net/util/prt"
 	"reflect"
 )
 

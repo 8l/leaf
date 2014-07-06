@@ -7,7 +7,7 @@ import (
 
 	"e8vm.net/leaf/parser"
 	"e8vm.net/leaf/ast"
-	"e8vm.net/leaf/prt"
+	"e8vm.net/util/prt"
 )
 
 func mainParse(args []string) {

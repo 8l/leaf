@@ -4,7 +4,7 @@ import (
 	"io"
 
 	"e8vm.net/leaf/lexer"
-	"e8vm.net/leaf/prt"
+	"e8vm.net/util/prt"
 )
 
 type trackNode interface{}

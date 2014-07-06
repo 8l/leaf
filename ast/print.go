@@ -3,7 +3,7 @@ package ast
 import (
 	"reflect"
 
-	"e8vm.net/leaf/prt"
+	"e8vm.net/util/prt"
 )
 
 func Print(p prt.Iface, n Node) {

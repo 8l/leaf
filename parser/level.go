@@ -2,7 +2,7 @@ package parser
 
 import (
 	"e8vm.net/leaf/lexer"
-	"e8vm.net/leaf/prt"
+	"e8vm.net/util/prt"
 )
 
 type level struct {
