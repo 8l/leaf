@@ -5,8 +5,9 @@ go:
     - tip
 
 install:
-    - go get e8vm.net/leaf
+    - go get e8vm.net/util
     - go get e8vm.net/e8
+    - go get e8vm.net/leaf
 
 script:
     - go test e8vm.net/leaf/...

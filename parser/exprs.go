@@ -1,8 +1,8 @@
 package parser
 
 import (
-	t "e8vm.net/leaf/lexer/token"
 	"e8vm.net/leaf/ast"
+	t "e8vm.net/leaf/lexer/token"
 )
 
 func (p *Parser) parseExpr() ast.Node {

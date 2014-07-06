@@ -6,9 +6,9 @@ import (
 	"io"
 
 	"e8vm.net/leaf/comperr"
+	"e8vm.net/leaf/lexer/token"
 	"e8vm.net/util/runes"
 	"e8vm.net/util/scanner"
-	"e8vm.net/leaf/lexer/token"
 )
 
 type Lexer struct {

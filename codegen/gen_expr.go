@@ -4,11 +4,11 @@ import (
 	"math"
 	"strconv"
 
+	"e8vm.net/leaf/ast"
 	"e8vm.net/leaf/ir"
 	"e8vm.net/leaf/ir/types"
 	"e8vm.net/leaf/lexer"
 	"e8vm.net/leaf/lexer/token"
-	"e8vm.net/leaf/ast"
 )
 
 func (self *Gen) genExpr(code *ir.Code, expr ast.Node) *obj {
