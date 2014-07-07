@@ -20,7 +20,7 @@ type Lexer struct {
 	eof        bool  // end of file returned
 	err        error // first error encountered (including scanning error)
 
-	ErrorFunc func(e error)
+	onError func(e error)
 }
 
 // New creates a new lexer. The filename is used for generating compiler
@@ -35,6 +35,11 @@ func New(in io.Reader, filename string) *Lexer {
 	return ret
 }
 
+// OnError sets the call back function to call when an error occurs.
+func (lx *Lexer) OnError(f func(e error)) {
+	lx.onError = f
+}
+
 func (lx *Lexer) report(e error) {
 	if e == nil {
 		return
@@ -43,8 +48,8 @@ func (lx *Lexer) report(e error) {
 		lx.err = e
 	}
 
-	if lx.ErrorFunc != nil {
-		lx.ErrorFunc(e)
+	if lx.onError != nil {
+		lx.onError(e)
 	}
 }
 

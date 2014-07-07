@@ -37,7 +37,7 @@ func (p *Parser) parseCall(f ast.Node) ast.Node {
 
 	ret := new(ast.CallExpr)
 	ret.Func = f
-	ret.Token = p.last
+	ret.Token = p.last()
 
 	for p.until(tt.Rparen) {
 		arg := p.parseExpr()
@@ -68,12 +68,12 @@ func (p *Parser) parseOperand() ast.Node {
 	switch {
 	case p.accept(tt.Ident):
 		ret := new(ast.Operand)
-		ret.Token = p.last
+		ret.Token = p.last()
 		return ret
-	case p.cur.Type.(tt.T).IsLiteral():
+	case p.cur().Type.(tt.T).IsLiteral():
 		p.shift()
 		ret := new(ast.Operand)
-		ret.Token = p.last
+		ret.Token = p.last()
 		return ret
 	case p.ahead(tt.Lparen):
 		return p.parseParenExpr()

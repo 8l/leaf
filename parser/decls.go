@@ -6,7 +6,7 @@ import (
 )
 
 func (p *Parser) parseTopDecl() ast.Node {
-	if p.ahead(tt.Func) {
+	if p.s.Ahead(tt.Func) {
 		return p.parseFunc()
 	}
 
@@ -32,8 +32,8 @@ func (p *Parser) parseFunc() *ast.Func {
 		return err()
 	}
 
-	ret.NameToken = p.last
-	ret.Name = p.last.Lit
+	ret.NameToken = p.last()
+	ret.Name = p.last().Lit
 
 	// TODO: parse args and signature
 	if !p.expect(tt.Lparen) {

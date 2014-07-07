@@ -1,9 +1,9 @@
 package parser
 
 import (
-	"e8vm.net/util/tok"
 	"e8vm.net/leaf/ast"
 	"e8vm.net/leaf/lexer/tt"
+	"e8vm.net/util/tok"
 )
 
 func (p *Parser) parseStmt() ast.Node {
@@ -12,7 +12,7 @@ func (p *Parser) parseStmt() ast.Node {
 		p.err("unexpected EOF")
 		return nil
 
-	case p.cur.Type.(tt.T).IsLiteral():
+	case p.cur().Type.(tt.T).IsLiteral():
 		fallthrough
 	case p.ahead(tt.Ident) || p.ahead(tt.Lparen):
 		return p.parseExprStmt()

@@ -31,7 +31,7 @@ func mainLex(args []string) {
 		}
 
 		lex := lexer.New(fin, f)
-		lex.ErrorFunc = onError
+		lex.OnError(onError)
 
 		for lex.Scan() {
 			tok := lex.Token()
