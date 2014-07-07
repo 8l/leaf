@@ -39,12 +39,12 @@ func (p *Parser) parseCall(f ast.Node) ast.Node {
 	ret.Func = f
 	ret.Token = p.last()
 
-	for p.until(tt.Rparen) {
+	for !p.s.EOF() {
 		arg := p.parseExpr()
 		ret.Args = append(ret.Args, arg)
 
 		if p.ahead(tt.Rparen) {
-			continue
+			break
 		}
 
 		if !p.expect(tt.Comma) {

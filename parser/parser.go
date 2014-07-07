@@ -21,7 +21,7 @@ type Parser struct {
 	filename string
 	in       io.Reader
 
-	lex    *lexer.Lexer
+	lx     *lexer.Lexer
 	s      *lexin.Scanner
 	errors []error
 }
@@ -54,8 +54,8 @@ func isComment(t *tok.Token) bool {
 func New(in io.Reader, filename string) *Parser {
 	ret := new(Parser)
 	ret.filename = filename
-	ret.lex = lexer.New(in, filename)
-	ret.s = lexin.NewScanner(ret.lex)
+	ret.lx = lexer.New(in, filename)
+	ret.s = lexin.NewScanner(ret.lx)
 
 	ret.s.SkipFunc = isComment
 
