@@ -6,7 +6,6 @@ import (
 
 var strs = map[T]string{
 	Illegal: "Illegal",
-	EOF:     "EOF",
 	Comment: "Comment",
 
 	Ident:  "Ident",

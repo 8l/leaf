@@ -124,14 +124,20 @@ func (lx *Lexer) token(t tt.T, lit string) *tok.Token {
 	return lx.buf
 }
 
+func (lx *Lexer) eofToken() *tok.Token {
+	lx.buf.Type = tok.EOF
+	lx.buf.Lit = ""
+	return lx.buf
+}
+
 // Scan tests if the scanner has anything to return
 func (lx *Lexer) Scan() bool { return !lx.eof }
 
 // Token returns the next token.
 func (lx *Lexer) Token() *tok.Token {
 	ret := lx.scanToken()
-	t := ret.Type.(tt.T)
-	if t != tt.Illegal {
+	t, isT := ret.Type.(tt.T)
+	if isT && t != tt.Illegal {
 		lx.insertSemi = insertSemiTokenMap[t]
 	}
 
@@ -155,7 +161,7 @@ func (lx *Lexer) scanToken() *tok.Token {
 
 		lx.report(lx.s.Err())
 
-		return lx.token(tt.EOF, "")
+		return lx.eofToken()
 	}
 
 	s := lx.s

@@ -86,10 +86,6 @@ func (p *Parser) Errors() []error {
 }
 
 func (p *Parser) expect(tok tt.T) bool {
-	if tok == tt.EOF {
-		panic("cannot expect EOF")
-	}
-
 	if p.ahead(tok) {
 		assert(p.shift())
 		return true

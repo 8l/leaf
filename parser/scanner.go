@@ -32,26 +32,26 @@ func newScanner(in io.Reader, filename string) *scanner {
 	return ret
 }
 
-func ttOf(t *tok.Token) tt.T {
-	return t.Type.(tt.T)
+func ttIs(t *tok.Token, x tok.Type) bool {
+	return t.Type.Code() == x.Code()
 }
 
 // reads in the next token
 // return false if the current token is already end-of-file
 func (self *scanner) shift() bool {
-	if self.cur != nil && ttOf(self.cur) == tt.EOF {
+	if self.cur != nil && ttIs(self.cur, tok.EOF) {
 		return false
 	}
 
 	for self.lexer.Scan() {
 		self.last = self.cur
 
-		if self.last != nil && ttOf(self.last) != tt.Comment {
+		if self.last != nil && ttIs(self.last, tt.Comment) {
 			self.add(self.last) // record in tracker
 		}
 
 		self.cur = self.lexer.Token()
-		if ttOf(self.cur) != tt.Comment {
+		if !ttIs(self.cur, tt.Comment) {
 			return true
 		}
 	}
@@ -59,23 +59,23 @@ func (self *scanner) shift() bool {
 	panic("should never reach here")
 }
 
-func (self *scanner) ahead(tok tt.T) bool {
-	return ttOf(self.cur) == tok
+func (self *scanner) ahead(tok tok.Type) bool {
+	return ttIs(self.cur, tok)
 }
 
-func (self *scanner) accept(tok tt.T) bool {
-	if tok == tt.EOF {
+func (self *scanner) accept(t tok.Type) bool {
+	if t == tok.EOF {
 		panic("cannot accept EOF")
 	}
 
-	if self.ahead(tok) {
+	if self.ahead(t) {
 		return self.shift()
 	}
 	return false
 }
 
 func (self *scanner) eof() bool {
-	return self.ahead(tt.EOF)
+	return self.ahead(tok.EOF)
 }
 
 func (self *scanner) skipUntil(t tt.T) []*tok.Token {

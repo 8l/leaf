@@ -6,6 +6,7 @@ import (
 
 	"e8vm.net/leaf/lexer"
 	. "e8vm.net/leaf/lexer/tt"
+	"e8vm.net/util/tok"
 )
 
 type r struct {
@@ -18,8 +19,8 @@ func TestLexer(t *testing.T) {
 		lex := lexer.New(strings.NewReader(s), "")
 		i := 0
 		for lex.Scan() {
-			tok := lex.Token()
-			if tok.Type == EOF {
+			token := lex.Token()
+			if token.Type == tok.EOF {
 				if i != len(exp) {
 					t.Errorf("lex %q: unexpect EOF %d", i)
 				}
@@ -27,11 +28,11 @@ func TestLexer(t *testing.T) {
 			}
 
 			if i >= len(exp) ||
-				exp[i].t != tok.Type ||
-				exp[i].lit != tok.Lit {
+				exp[i].t != token.Type ||
+				exp[i].lit != token.Lit {
 
 				t.Errorf("lex %q: #%d: %q(%s)",
-					s, i, tok.Lit, tok.Type,
+					s, i, token.Lit, token.Type,
 				)
 			}
 			i++
