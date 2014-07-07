@@ -19,5 +19,5 @@ func ParseTree(f string) (TokenTree, []error) {
 }
 
 func (p *Parser) PrintTree(out io.Writer) {
-	p.scanner.tracker.PrintTrack(out)
+	p.scanner.tracker.Print(out)
 }

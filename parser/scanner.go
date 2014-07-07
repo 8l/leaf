@@ -6,6 +6,7 @@ import (
 	"e8vm.net/leaf/lexer"
 	"e8vm.net/leaf/lexer/tt"
 	"e8vm.net/util/tok"
+	"e8vm.net/util/tracker"
 )
 
 type scanner struct {
@@ -15,7 +16,7 @@ type scanner struct {
 
 	errors []error
 
-	*tracker
+	tracker *tracker.Tracker
 }
 
 func newScanner(in io.Reader, filename string) *scanner {
@@ -25,7 +26,7 @@ func newScanner(in io.Reader, filename string) *scanner {
 		ret.errors = append(ret.errors, e)
 	}
 
-	ret.tracker = new(tracker)
+	ret.tracker = tracker.New()
 	ret.shift()
 
 	return ret
@@ -46,7 +47,7 @@ func (self *scanner) shift() bool {
 		self.last = self.cur
 
 		if self.last != nil && ttOf(self.last) != tt.Comment {
-			self.tracker.add(self.last) // record in tracker
+			self.add(self.last) // record in tracker
 		}
 
 		self.cur = self.lexer.Token()
@@ -92,4 +93,20 @@ func (self *scanner) skipUntil(t tt.T) []*tok.Token {
 	self.shift()
 
 	return skipped
+}
+
+func (s *scanner) push(str string) {
+	s.tracker.Push(str)
+}
+
+func (s *scanner) pop() tracker.Node {
+	return s.tracker.Pop()
+}
+
+func (s *scanner) extend(str string) {
+	s.tracker.Extend(str)
+}
+
+func (s *scanner) add(n tracker.Node) {
+	s.tracker.Add(n)
 }

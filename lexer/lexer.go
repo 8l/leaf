@@ -127,7 +127,7 @@ func (lx *Lexer) token(t tt.T, lit string) *tok.Token {
 // Scan tests if the scanner has anything to return
 func (lx *Lexer) Scan() bool { return !lx.eof }
 
-// Token returns the next token.  
+// Token returns the next token.
 func (lx *Lexer) Token() *tok.Token {
 	ret := lx.scanToken()
 	t := ret.Type.(tt.T)
