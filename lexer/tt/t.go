@@ -4,10 +4,8 @@ package tt
 type T int
 
 const (
-	// code 0 is reserved for EOF
-
 	// misc
-	Illegal = T(1 + iota)
+	Illegal = T(iota)
 	Comment
 
 	// literals
