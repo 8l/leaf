@@ -18,7 +18,7 @@ type Lexer struct {
 	illegal    bool   // illegal encountered
 	insertSemi bool   // if treat end line as whitespace
 	eof        bool   // end of file returned
-	err        error  // first error encountered
+	err        error  // first error encountered (including scanning error)
 	filename   string // filename for printing error
 
 	ErrorFunc func(e error)
@@ -78,7 +78,8 @@ func (lx *Lexer) scanNumber(dotLed bool) (lit string, t tt.T) {
 	return lit, t
 }
 
-// Err returns the first error encountered on lexing.
+// Err returns the first error encountered on lexing (including scanning
+// error).
 func (lx *Lexer) Err() error {
 	return lx.err
 }
