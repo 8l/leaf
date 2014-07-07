@@ -7,7 +7,8 @@ import (
 	"e8vm.net/leaf/ir"
 	"e8vm.net/leaf/ir/symbol"
 	"e8vm.net/leaf/ir/types"
-	"e8vm.net/leaf/lexer"
+	"e8vm.net/util/comperr"
+	"e8vm.net/util/tok"
 )
 
 type Gen struct {
@@ -84,12 +85,12 @@ func (self *Gen) tryAddDecl(f *ir.File, newDecl *decl) *decl {
 	return nil
 }
 
-func (self *Gen) errorf(t *lexer.Token, f string, args ...interface{}) {
-	e := lexer.MakeError(t, fmt.Errorf(f, args...))
+func (self *Gen) errorf(t *tok.Token, f string, args ...interface{}) {
+	e := comperr.New(t, fmt.Errorf(f, args...))
 	self.errors = append(self.errors, e)
 }
 
-func (self *Gen) errore(t *lexer.Token, e error) {
+func (self *Gen) errore(t *tok.Token, e error) {
 	self.errorf(t, "%s", e.Error())
 }
 

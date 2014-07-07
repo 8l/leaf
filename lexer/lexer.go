@@ -5,15 +5,16 @@ import (
 	"fmt"
 	"io"
 
-	"e8vm.net/leaf/comperr"
-	"e8vm.net/leaf/lexer/token"
+	"e8vm.net/leaf/lexer/tt"
+	"e8vm.net/util/comperr"
 	"e8vm.net/util/runes"
 	"e8vm.net/util/scanner"
+	"e8vm.net/util/tok"
 )
 
 type Lexer struct {
 	s   *scanner.Scanner
-	buf *Token
+	buf *tok.Token
 
 	illegal    bool   // illegal encountered
 	insertSemi bool   // if treat end line as whitespace
@@ -28,19 +29,10 @@ type Lexer struct {
 func New(in io.Reader, filename string) *Lexer {
 	ret := new(Lexer)
 	ret.s = scanner.New(in)
-	ret.buf = new(Token)
+	ret.buf = new(tok.Token)
 	ret.buf.File = filename
 	ret.filename = filename
 
-	return ret
-}
-
-func MakeError(pos *Token, e error) *comperr.Error {
-	ret := new(comperr.Error)
-	ret.File = pos.File
-	ret.Line = pos.Line
-	ret.Col = pos.Col
-	ret.Err = e
 	return ret
 }
 
@@ -82,22 +74,22 @@ func (self *Lexer) skipWhites() {
 	}
 }
 
-func (self *Lexer) _scanNumber(dotLed bool) (lit string, t token.Token) {
+func (self *Lexer) _scanNumber(dotLed bool) (lit string, t tt.T) {
 	s := self.s
 
 	if !dotLed {
 		if s.Scan('0') {
 			if s.Scan('x') || self.s.Scan('X') {
 				if s.ScanHexDigits() == 0 {
-					return s.Accept(), token.Illegal
+					return s.Accept(), tt.Illegal
 				}
 			} else if s.ScanOctDigit() {
 				s.ScanOctDigits()
-				return s.Accept(), token.Int
+				return s.Accept(), tt.Int
 			}
 
 			if s.Peek() != '.' {
-				return s.Accept(), token.Int
+				return s.Accept(), tt.Int
 			}
 		}
 
@@ -106,37 +98,37 @@ func (self *Lexer) _scanNumber(dotLed bool) (lit string, t token.Token) {
 		if s.ScanAny("eE") {
 			s.ScanAny("-+")
 			if s.ScanDigits() == 0 {
-				return s.Accept(), token.Illegal
+				return s.Accept(), tt.Illegal
 			}
-			return s.Accept(), token.Float
+			return s.Accept(), tt.Float
 		}
 
 		if !s.Scan('.') {
-			return s.Accept(), token.Int
+			return s.Accept(), tt.Int
 		}
 
 		s.ScanDigits()
 	} else {
 		if s.ScanDigits() == 0 {
-			return s.Accept(), token.Illegal
+			return s.Accept(), tt.Illegal
 		}
 	}
 
 	if s.ScanAny("eE") {
 		s.ScanAny("-+")
 		if s.ScanDigits() == 0 {
-			return s.Accept(), token.Illegal
+			return s.Accept(), tt.Illegal
 		}
 	}
 
-	return s.Accept(), token.Float
+	return s.Accept(), tt.Float
 }
 
-func (self *Lexer) scanNumber(dotLed bool) (lit string, t token.Token) {
+func (self *Lexer) scanNumber(dotLed bool) (lit string, t tt.T) {
 	lit, t = self._scanNumber(dotLed)
-	if t == token.Illegal {
+	if t == tt.Illegal {
 		self.failf("invalid number")
-		t = token.Int
+		t = tt.Int
 	}
 
 	return
@@ -268,25 +260,25 @@ func (self *Lexer) ScanErr() error {
 	return self.s.Err()
 }
 
-var insertSemiTokens = []token.Token{
-	token.Ident,
-	token.Int,
-	token.Float,
-	token.Break,
-	token.Continue,
-	token.Fallthrough,
-	token.Return,
-	token.Char,
-	token.String,
-	token.Rparen,
-	token.Rbrack,
-	token.Rbrace,
-	token.Inc,
-	token.Dec,
+var insertSemiTokens = []tt.T{
+	tt.Ident,
+	tt.Int,
+	tt.Float,
+	tt.Break,
+	tt.Continue,
+	tt.Fallthrough,
+	tt.Return,
+	tt.Char,
+	tt.String,
+	tt.Rparen,
+	tt.Rbrack,
+	tt.Rbrace,
+	tt.Inc,
+	tt.Dec,
 }
 
-var insertSemiTokenMap = func() map[token.Token]bool {
-	ret := make(map[token.Token]bool)
+var insertSemiTokenMap = func() map[tt.T]bool {
+	ret := make(map[tt.T]bool)
 	for _, t := range insertSemiTokens {
 		ret[t] = true
 	}
@@ -297,8 +289,8 @@ func (self *Lexer) savePos() {
 	self.buf.Line, self.buf.Col = self.s.Pos()
 }
 
-func (self *Lexer) token(t token.Token, lit string) *Token {
-	self.buf.Token = t
+func (self *Lexer) token(t tt.T, lit string) *tok.Token {
+	self.buf.Type = t
 	self.buf.Lit = lit
 	return self.buf
 }
@@ -310,20 +302,21 @@ func (self *Lexer) Scan() bool { return !self.eof }
 // t is the token code, p is the position code,
 // and lit is the string literal.
 // Returns token.EOF in t for the last token.
-func (self *Lexer) Token() *Token {
+func (self *Lexer) Token() *tok.Token {
 	ret := self.scanToken()
-	if ret.Token != token.Illegal {
-		self.insertSemi = insertSemiTokenMap[ret.Token]
+	t := ret.Type.(tt.T)
+	if t != tt.Illegal {
+		self.insertSemi = insertSemiTokenMap[t]
 	}
 
 	return ret.Clone()
 }
 
-func (self *Lexer) scanToken() *Token {
+func (self *Lexer) scanToken() *tok.Token {
 	if self.eof {
 		// once it reached eof, it will repeatedly return EOF
 		self.savePos()
-		return self.token(token.EOF, "")
+		return self.token(tt.EOF, "")
 	}
 
 	self.skipWhites()
@@ -332,13 +325,13 @@ func (self *Lexer) scanToken() *Token {
 	if self.s.Closed() {
 		if self.insertSemi {
 			self.insertSemi = false
-			return self.token(token.Semi, ";")
+			return self.token(tt.Semi, ";")
 		}
 		self.eof = true
 
 		self.report(self.s.Err())
 
-		return self.token(token.EOF, "")
+		return self.token(tt.EOF, "")
 	}
 
 	s := self.s
@@ -348,7 +341,7 @@ func (self *Lexer) scanToken() *Token {
 	case runes.IsLetter(r):
 		s.ScanIdent()
 		lit := s.Accept()
-		t := token.FromIdent(lit)
+		t := tt.FromIdent(lit)
 		return self.token(t, lit)
 	case runes.IsDigit(r):
 		lit, t := self.scanNumber(false)
@@ -356,15 +349,15 @@ func (self *Lexer) scanToken() *Token {
 	case r == '\'':
 		s.Next()
 		lit := self.scanChar()
-		return self.token(token.Char, lit)
+		return self.token(tt.Char, lit)
 	case r == '"':
 		s.Next()
 		lit := self.scanString()
-		return self.token(token.String, lit)
+		return self.token(tt.String, lit)
 	case r == '`':
 		s.Next()
 		lit := self.scanRawString()
-		return self.token(token.String, lit)
+		return self.token(tt.String, lit)
 	}
 
 	s.Next() // at this time, we will always make some progress
@@ -376,13 +369,13 @@ func (self *Lexer) scanToken() *Token {
 		r2 := s.Peek()
 		if r2 == '/' || r2 == '*' {
 			s := self.scanComment()
-			return self.token(token.Comment, s)
+			return self.token(tt.Comment, s)
 		}
 	}
 
 	t := self.scanOperator(r)
 	lit := s.Accept()
-	if t == token.Semi {
+	if t == tt.Semi {
 		lit = ";"
 	}
 

@@ -3,8 +3,8 @@ package parser
 import (
 	"io"
 
-	"e8vm.net/leaf/lexer"
 	"e8vm.net/util/prt"
+	"e8vm.net/util/tok"
 )
 
 type trackNode interface{}
@@ -16,7 +16,7 @@ type tracker struct {
 
 func (t *tracker) add(n trackNode) {
 	_, isLevel := n.(*level)
-	_, isToken := n.(*lexer.Token)
+	_, isToken := n.(*tok.Token)
 	assert(isLevel || isToken)
 
 	nlevel := len(t.stack)

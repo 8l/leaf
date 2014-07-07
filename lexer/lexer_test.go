@@ -5,11 +5,11 @@ import (
 	"testing"
 
 	"e8vm.net/leaf/lexer"
-	. "e8vm.net/leaf/lexer/token"
+	. "e8vm.net/leaf/lexer/tt"
 )
 
 type r struct {
-	t   Token
+	t   T
 	lit string
 }
 
@@ -19,7 +19,7 @@ func TestLexer(t *testing.T) {
 		i := 0
 		for lex.Scan() {
 			tok := lex.Token()
-			if tok.Token == EOF {
+			if tok.Type == EOF {
 				if i != len(exp) {
 					t.Errorf("lex %q: unexpect EOF %d", i)
 				}
@@ -27,11 +27,11 @@ func TestLexer(t *testing.T) {
 			}
 
 			if i >= len(exp) ||
-				exp[i].t != tok.Token ||
+				exp[i].t != tok.Type ||
 				exp[i].lit != tok.Lit {
 
 				t.Errorf("lex %q: #%d: %q(%s)",
-					s, i, tok.Lit, tok.Token,
+					s, i, tok.Lit, tok.Type,
 				)
 			}
 			i++
@@ -61,8 +61,8 @@ func TestLexer(t *testing.T) {
 		}
 	}
 
-	m := func(t Token, lit string) *r { return &r{t, lit} }
-	n := func(t Token) *r { return &r{t, t.String()} }
+	m := func(t T, lit string) *r { return &r{t, lit} }
+	n := func(t T) *r { return &r{t, t.String()} }
 	id := func(s string) *r { return &r{Ident, s} }
 	sc := n(Semi)
 	// eof := n(EOF)

@@ -1,7 +1,7 @@
 package ast
 
 import (
-	"e8vm.net/leaf/lexer"
+	"e8vm.net/util/tok"
 )
 
 type Func struct {
@@ -10,7 +10,7 @@ type Func struct {
 	Ret   *FuncArg
 	Block *Block
 
-	NameToken *lexer.Token
+	NameToken *tok.Token
 }
 
 type FuncArg struct {

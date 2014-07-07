@@ -1,16 +1,16 @@
 package ast
 
 import (
-	"e8vm.net/leaf/lexer"
+	"e8vm.net/util/tok"
 )
 
 type CallExpr struct {
 	Func Node
 	Args []Node
 
-	Token *lexer.Token
+	Token *tok.Token
 }
 
 type Operand struct {
-	Token *lexer.Token
+	Token *tok.Token
 }

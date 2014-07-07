@@ -2,11 +2,11 @@ package parser
 
 import (
 	"e8vm.net/leaf/ast"
-	t "e8vm.net/leaf/lexer/token"
+	"e8vm.net/leaf/lexer/tt"
 )
 
 func (p *Parser) parseTopDecl() ast.Node {
-	if p.ahead(t.Func) {
+	if p.ahead(tt.Func) {
 		return p.parseFunc()
 	}
 
@@ -20,15 +20,15 @@ func (p *Parser) parseFunc() *ast.Func {
 
 	ret := new(ast.Func)
 	err := func() *ast.Func {
-		p.skipUntil(t.Semi)
+		p.skipUntil(tt.Semi)
 		return ret
 	}
 
-	if !p.expect(t.Func) {
+	if !p.expect(tt.Func) {
 		return err()
 	}
 
-	if !p.expect(t.Ident) {
+	if !p.expect(tt.Ident) {
 		return err()
 	}
 
@@ -36,16 +36,16 @@ func (p *Parser) parseFunc() *ast.Func {
 	ret.Name = p.last.Lit
 
 	// TODO: parse args and signature
-	if !p.expect(t.Lparen) {
+	if !p.expect(tt.Lparen) {
 		return err()
 	}
 
-	if !p.expect(t.Rparen) {
+	if !p.expect(tt.Rparen) {
 		return err()
 	}
 
-	if !p.ahead(t.Lbrace) {
-		p.expect(t.Lbrace)
+	if !p.ahead(tt.Lbrace) {
+		p.expect(tt.Lbrace)
 		return err()
 	}
 
@@ -63,5 +63,5 @@ func (p *Parser) parseErrorDecl() {
 	defer p.pop()
 
 	p.expecting("declaration")
-	p.skipUntil(t.Semi)
+	p.skipUntil(tt.Semi)
 }

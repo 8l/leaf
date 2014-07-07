@@ -2,7 +2,7 @@ package parser
 
 import (
 	"e8vm.net/leaf/ast"
-	t "e8vm.net/leaf/lexer/token"
+	"e8vm.net/leaf/lexer/tt"
 )
 
 func (p *Parser) parseExpr() ast.Node {
@@ -23,7 +23,7 @@ func (p *Parser) parseUnaryExpr() ast.Node {
 func (p *Parser) parsePrimaryExpr() ast.Node {
 	x := p.parseOperand()
 
-	if p.ahead(t.Lparen) {
+	if p.ahead(tt.Lparen) {
 		return p.parseCall(x)
 	}
 	return x
@@ -33,27 +33,27 @@ func (p *Parser) parseCall(f ast.Node) ast.Node {
 	p.extend("call-expr")
 	defer p.pop()
 
-	assert(p.expect(t.Lparen)) // otherwise, why you are here?
+	assert(p.expect(tt.Lparen)) // otherwise, why you are here?
 
 	ret := new(ast.CallExpr)
 	ret.Func = f
 	ret.Token = p.last
 
-	for p.until(t.Rparen) {
+	for p.until(tt.Rparen) {
 		arg := p.parseExpr()
 		ret.Args = append(ret.Args, arg)
 
-		if p.ahead(t.Rparen) {
+		if p.ahead(tt.Rparen) {
 			continue
 		}
 
-		if !p.expect(t.Comma) {
+		if !p.expect(tt.Comma) {
 			continue
 		}
 	}
 
-	if !p.expect(t.Rparen) {
-		p.skipUntil(t.Rparen)
+	if !p.expect(tt.Rparen) {
+		p.skipUntil(tt.Rparen)
 	}
 
 	return ret
@@ -66,16 +66,16 @@ func (p *Parser) parseOperand() ast.Node {
 	defer p.pop()
 
 	switch {
-	case p.accept(t.Ident):
+	case p.accept(tt.Ident):
 		ret := new(ast.Operand)
 		ret.Token = p.last
 		return ret
-	case p.cur.Token.IsLiteral():
+	case p.cur.Type.(tt.T).IsLiteral():
 		p.shift()
 		ret := new(ast.Operand)
 		ret.Token = p.last
 		return ret
-	case p.ahead(t.Lparen):
+	case p.ahead(tt.Lparen):
 		return p.parseParenExpr()
 	}
 
@@ -84,14 +84,14 @@ func (p *Parser) parseOperand() ast.Node {
 }
 
 func (p *Parser) parseParenExpr() ast.Node {
-	if !p.expect(t.Lparen) {
+	if !p.expect(tt.Lparen) {
 		return nil
 	}
 
 	ret := p.parseExpr()
 
-	if !p.expect(t.Rparen) {
-		p.skipUntil(t.Rparen)
+	if !p.expect(tt.Rparen) {
+		p.skipUntil(tt.Rparen)
 	}
 
 	return ret

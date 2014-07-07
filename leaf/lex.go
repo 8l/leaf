@@ -35,7 +35,7 @@ func mainLex(args []string) {
 
 		for lex.Scan() {
 			tok := lex.Token()
-			fmt.Println(tok.Str(f))
+			fmt.Println(tok.String())
 		}
 	}
 }

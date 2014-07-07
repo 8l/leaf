@@ -1,11 +1,11 @@
 // Package token defines the tokens for the stay language.
-package token
+package tt
 
-type Token int
+type T int
 
 const (
 	// misc
-	Illegal = Token(iota)
+	Illegal = T(iota)
 	EOF
 	Comment
 
@@ -100,3 +100,5 @@ const (
 
 	keywordEnd
 )
+
+func (t T) Code() int { return int(t) }

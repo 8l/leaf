@@ -1,18 +1,18 @@
-package token
+package tt
 
-func (t Token) IsOperator() bool {
+func (t T) IsOperator() bool {
 	return operatorBegin < t && t < operatorEnd
 }
 
-func (t Token) IsKeyword() bool {
+func (t T) IsKeyword() bool {
 	return keywordBegin < t && t < keywordEnd
 }
 
-func (t Token) IsLiteral() bool {
+func (t T) IsLiteral() bool {
 	return literalBegin < t && t < literalEnd
 }
 
-func (t Token) IsSymbol() bool {
+func (t T) IsSymbol() bool {
 	if t.IsLiteral() {
 		return false
 	}

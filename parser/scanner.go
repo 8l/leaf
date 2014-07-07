@@ -4,13 +4,14 @@ import (
 	"io"
 
 	"e8vm.net/leaf/lexer"
-	t "e8vm.net/leaf/lexer/token"
+	"e8vm.net/leaf/lexer/tt"
+	"e8vm.net/util/tok"
 )
 
 type scanner struct {
 	lexer *lexer.Lexer
-	cur   *lexer.Token
-	last  *lexer.Token
+	cur   *tok.Token
+	last  *tok.Token
 
 	errors []error
 
@@ -30,22 +31,26 @@ func newScanner(in io.Reader, filename string) *scanner {
 	return ret
 }
 
+func ttOf(t *tok.Token) tt.T {
+	return t.Type.(tt.T)
+}
+
 // reads in the next token
 // return false if the current token is already end-of-file
 func (self *scanner) shift() bool {
-	if self.cur != nil && self.cur.Token == t.EOF {
+	if self.cur != nil && ttOf(self.cur) == tt.EOF {
 		return false
 	}
 
 	for self.lexer.Scan() {
 		self.last = self.cur
 
-		if self.last != nil && self.last.Token != t.Comment {
+		if self.last != nil && ttOf(self.last) != tt.Comment {
 			self.tracker.add(self.last) // record in tracker
 		}
 
 		self.cur = self.lexer.Token()
-		if self.cur.Token != t.Comment {
+		if ttOf(self.cur) != tt.Comment {
 			return true
 		}
 	}
@@ -53,12 +58,12 @@ func (self *scanner) shift() bool {
 	panic("should never reach here")
 }
 
-func (self *scanner) ahead(tok t.Token) bool {
-	return self.cur.Token == tok
+func (self *scanner) ahead(tok tt.T) bool {
+	return ttOf(self.cur) == tok
 }
 
-func (self *scanner) accept(tok t.Token) bool {
-	if tok == t.EOF {
+func (self *scanner) accept(tok tt.T) bool {
+	if tok == tt.EOF {
 		panic("cannot accept EOF")
 	}
 
@@ -69,13 +74,13 @@ func (self *scanner) accept(tok t.Token) bool {
 }
 
 func (self *scanner) eof() bool {
-	return self.ahead(t.EOF)
+	return self.ahead(tt.EOF)
 }
 
-func (self *scanner) skipUntil(tok t.Token) []*lexer.Token {
-	var skipped []*lexer.Token
+func (self *scanner) skipUntil(t tt.T) []*tok.Token {
+	var skipped []*tok.Token
 
-	for !self.ahead(tok) {
+	for !self.ahead(t) {
 		skipped = append(skipped, self.cur)
 		if !self.shift() {
 			return skipped

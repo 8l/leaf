@@ -7,8 +7,8 @@ import (
 	"e8vm.net/leaf/ast"
 	"e8vm.net/leaf/ir"
 	"e8vm.net/leaf/ir/types"
-	"e8vm.net/leaf/lexer"
-	"e8vm.net/leaf/lexer/token"
+	"e8vm.net/leaf/lexer/tt"
+	"e8vm.net/util/tok"
 )
 
 func (self *Gen) genExpr(code *ir.Code, expr ast.Node) *obj {
@@ -77,11 +77,11 @@ func makeConst(i int64, t types.Basic) *obj {
 func (self *Gen) genOperand(code *ir.Code, op *ast.Operand) *obj {
 	tok := op.Token
 
-	switch tok.Token {
+	switch tok.Type.(tt.T) {
 	default:
 		panic("bug or todo")
 
-	case token.Int:
+	case tt.Int:
 		i, e := strconv.ParseInt(tok.Lit, 0, 64)
 		if e != nil {
 			self.errore(tok, e)
@@ -100,7 +100,7 @@ func (self *Gen) genOperand(code *ir.Code, op *ast.Operand) *obj {
 			return makeConst(i, types.Uint32)
 		}
 
-	case token.Char:
+	case tt.Char:
 		c, e := unquoteChar(tok.Lit)
 		if e != nil {
 			self.errore(tok, e)
@@ -108,13 +108,13 @@ func (self *Gen) genOperand(code *ir.Code, op *ast.Operand) *obj {
 		}
 		return makeConst(int64(c), types.Int8)
 
-	case token.Ident:
+	case tt.Ident:
 		return self.genIdent(code, tok)
 	}
 }
 
-func (self *Gen) genIdent(code *ir.Code, tok *lexer.Token) *obj {
-	assert(tok.Token == token.Ident)
+func (self *Gen) genIdent(code *ir.Code, tok *tok.Token) *obj {
+	assert(tok.Type.(tt.T) == tt.Ident)
 
 	o, t := code.Query(tok.Lit)
 	if o == nil {

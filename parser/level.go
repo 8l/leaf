@@ -1,8 +1,8 @@
 package parser
 
 import (
-	"e8vm.net/leaf/lexer"
 	"e8vm.net/util/prt"
+	"e8vm.net/util/tok"
 )
 
 type level struct {
@@ -33,7 +33,7 @@ func (self *level) PrintTo(p prt.Iface) {
 		if isLevel {
 			level.PrintTo(p)
 		} else {
-			tok := sub.(*lexer.Token)
+			tok := sub.(*tok.Token)
 			p.Print("- ", tok)
 		}
 	}
