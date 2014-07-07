@@ -34,18 +34,18 @@ var xeqOps = map[rune]*struct {
 	'|': {tt.Or, tt.OrAssign, tt.Lor, '|'},
 }
 
-func (self *Lexer) scanOperator(r rune) tt.T {
-	s := self.s
+func (lx *Lexer) scanOperator(r rune) tt.T {
+	s := lx.s
 
 	if r == '\n' {
-		self.insertSemi = false
+		lx.insertSemi = false
 		return tt.Semi
 	} else if r == '.' {
 		if s.Scan('.') {
 			if s.Scan('.') {
 				return tt.Ellipsis
 			}
-			self.failf("two dots, expecting one more")
+			lx.reportf("two dots, expecting one more")
 			return tt.Illegal
 		}
 
@@ -104,9 +104,9 @@ func (self *Lexer) scanOperator(r rune) tt.T {
 		return tt.And
 	}
 
-	if !self.illegal {
-		self.illegal = true
-		self.failf("illegal character")
+	if !lx.illegal {
+		lx.illegal = true
+		lx.reportf("illegal character")
 	}
 	return tt.Illegal
 }

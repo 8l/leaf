@@ -2,7 +2,6 @@
 package lexer
 
 import (
-	"fmt"
 	"io"
 
 	"e8vm.net/leaf/lexer/tt"
@@ -35,11 +34,7 @@ func New(in io.Reader, filename string) *Lexer {
 	return ret
 }
 
-func (lx *Lexer) wrapError(e error) error {
-	return lx.s.CompErr(e)
-}
-
-func (lx *Lexer) _report(e error) {
+func (lx *Lexer) report(e error) {
 	if e == nil {
 		return
 	}
@@ -52,18 +47,9 @@ func (lx *Lexer) _report(e error) {
 	}
 }
 
-func (lx *Lexer) report(e error) {
-	if e == nil {
-		return
-	}
-
-	e = lx.wrapError(e)
-	lx._report(e)
-}
-
-// Reports a lex error
-func (lx *Lexer) failf(f string, args ...interface{}) {
-	lx.report(fmt.Errorf(f, args...))
+func (lx *Lexer) reportf(f string, args ...interface{}) {
+	e := lx.s.Errorf(f, args...)
+	lx.report(e)
 }
 
 func (lx *Lexer) skipWhites() {
@@ -79,7 +65,7 @@ func (lx *Lexer) scanNumber(dotLed bool) (lit string, t tt.T) {
 	switch ntype {
 	case scanner.NumIllegal:
 		t = tt.Int
-		lx.failf("invalid number")
+		lx.reportf("invalid number")
 	case scanner.NumInt:
 		t = tt.Int
 	case scanner.NumFloat:
@@ -187,17 +173,17 @@ func (lx *Lexer) scanToken() *tok.Token {
 	case r == '\'':
 		s.Next()
 		lit, e := scanner.ScanChar(lx.s)
-		lx._report(e)
+		lx.report(e)
 		return lx.token(tt.Char, lit)
 	case r == '"':
 		s.Next()
 		lit, e := scanner.ScanString(lx.s)
-		lx._report(e)
+		lx.report(e)
 		return lx.token(tt.String, lit)
 	case r == '`':
 		s.Next()
 		lit, e := scanner.ScanRawString(lx.s)
-		lx._report(e)
+		lx.report(e)
 		return lx.token(tt.String, lit)
 	}
 
@@ -210,7 +196,7 @@ func (lx *Lexer) scanToken() *tok.Token {
 		r2 := s.Peek()
 		if r2 == '/' || r2 == '*' {
 			s, e := scanner.ScanComment(lx.s)
-			lx._report(e)
+			lx.report(e)
 			return lx.token(tt.Comment, s)
 		}
 	}
