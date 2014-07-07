@@ -12,14 +12,13 @@ import (
 
 // Lexer splits an input byte stream into a token stream.
 type Lexer struct {
-	s   *scanner.Scanner
-	buf *tok.Token
-
-	illegal    bool   // illegal encountered
-	insertSemi bool   // if treat end line as whitespace
-	eof        bool   // end of file returned
-	err        error  // first error encountered (including scanning error)
+	s          *scanner.Scanner
 	filename   string // filename for printing error
+	buf        *tok.Token
+	illegal    bool  // if suffers an illegal char
+	insertSemi bool  // if treat end line as whitespace
+	eof        bool  // end of file returned
+	err        error // first error encountered (including scanning error)
 
 	ErrorFunc func(e error)
 }
@@ -118,18 +117,17 @@ func (lx *Lexer) savePos() {
 	lx.buf.Line, lx.buf.Col = lx.s.Pos()
 }
 
+// token makes a token with the buf.
 func (lx *Lexer) token(t tt.T, lit string) *tok.Token {
 	lx.buf.Type = t
 	lx.buf.Lit = lit
 	return lx.buf
 }
 
-// Scan returns if the scanner has anything to return
+// Scan tests if the scanner has anything to return
 func (lx *Lexer) Scan() bool { return !lx.eof }
 
-// Token returns the next token.  t is the token code, p is the position code,
-// and lit is the string literal.  It returns token.EOF in t for the last
-// token.
+// Token returns the next token.  
 func (lx *Lexer) Token() *tok.Token {
 	ret := lx.scanToken()
 	t := ret.Type.(tt.T)
@@ -142,9 +140,7 @@ func (lx *Lexer) Token() *tok.Token {
 
 func (lx *Lexer) scanToken() *tok.Token {
 	if lx.eof {
-		// once it reached eof, it will repeatedly return EOF
-		lx.savePos()
-		return lx.token(tt.EOF, "")
+		panic("no more")
 	}
 
 	lx.skipWhites()
