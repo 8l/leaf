@@ -10,6 +10,7 @@ import (
 	"e8vm.net/util/tok"
 )
 
+// Lexer splits an input byte stream into a token stream.
 type Lexer struct {
 	s   *scanner.Scanner
 	buf *tok.Token
@@ -23,7 +24,8 @@ type Lexer struct {
 	ErrorFunc func(e error)
 }
 
-// Creates a new lexer
+// New creates a new lexer. The filename is used for generating compiler
+// errors.
 func New(in io.Reader, filename string) *Lexer {
 	ret := new(Lexer)
 	ret.s = scanner.New(in, filename)
@@ -76,10 +78,12 @@ func (lx *Lexer) scanNumber(dotLed bool) (lit string, t tt.T) {
 	return lit, t
 }
 
+// Err returns the first error encountered on lexing.
 func (lx *Lexer) Err() error {
 	return lx.err
 }
 
+// ScanErr returns the first error encountered on scanning.
 func (lx *Lexer) ScanErr() error {
 	return lx.s.Err()
 }
@@ -119,13 +123,12 @@ func (lx *Lexer) token(t tt.T, lit string) *tok.Token {
 	return lx.buf
 }
 
-// Returns if the scanner has anything to return
+// Scan returns if the scanner has anything to return
 func (lx *Lexer) Scan() bool { return !lx.eof }
 
-// Returns the next token.
-// t is the token code, p is the position code,
-// and lit is the string literal.
-// Returns token.EOF in t for the last token.
+// Token returns the next token.  t is the token code, p is the position code,
+// and lit is the string literal.  It returns token.EOF in t for the last
+// token.
 func (lx *Lexer) Token() *tok.Token {
 	ret := lx.scanToken()
 	t := ret.Type.(tt.T)
