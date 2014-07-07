@@ -1,4 +1,4 @@
-// Package token defines the tokens for the stay language.
+// Package tt defines the tokens for the stay language.
 package tt
 
 type T int
