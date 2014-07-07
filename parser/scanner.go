@@ -78,7 +78,7 @@ func (self *scanner) eof() bool {
 	return self.ahead(tok.EOF)
 }
 
-func (self *scanner) skipUntil(t tt.T) []*tok.Token {
+func (self *scanner) skipUntil(t tok.Type) []*tok.Token {
 	var skipped []*tok.Token
 
 	for !self.ahead(t) {
