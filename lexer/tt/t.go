@@ -1,4 +1,4 @@
-// Package tt defines the tokens for the stay language.
+// Package tt defines the tokens for the leaf language.
 package tt
 
 type T int

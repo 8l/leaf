@@ -6,18 +6,15 @@ func Keywords() []T { return keywordList }
 // List all the operators
 func Operators() []T { return operatorList }
 
-var keywordList = func() []T {
-	ret := make([]T, 0, keywordEnd-keywordBegin-1)
-	for i := keywordBegin + 1; i < keywordEnd; i++ {
+func makeList(from, to T) []T {
+	ret := make([]T, 0, to-from-1)
+	for i := from + 1; i < to; i++ {
 		ret = append(ret, i)
 	}
 	return ret
-}()
+}
 
-var operatorList = func() []T {
-	ret := make([]T, 0, operatorEnd-operatorBegin-1)
-	for i := operatorBegin + 1; i < operatorEnd; i++ {
-		ret = append(ret, i)
-	}
-	return ret
-}()
+var (
+	keywordList  = makeList(keywordBegin, keywordEnd)
+	operatorList = makeList(operatorBegin, operatorEnd)
+)
