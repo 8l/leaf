@@ -47,6 +47,10 @@ func NewScanner(lexer Lexer, skip func(*tok.Token) bool) *Scanner {
 }
 
 func (s *Scanner) ignore(t *tok.Token) bool {
+	if t.Is(tok.EOF) {
+		return false
+	}
+
 	if s.SkipFunc == nil {
 		return false
 	}
@@ -61,21 +65,21 @@ func (s *Scanner) Shift() bool {
 		return false // already shifts to the end
 	}
 
-	for s.lexer.Scan() {
-		s.last = s.cur
-
-		if s.last != nil && !s.ignore(s.last) {
-			s.tracker.Add(s.last)
-		}
-
-		s.cur = s.lexer.Token()
-		if s.ignore(s.cur) {
-			continue
-		}
-		return true
+	if !s.lexer.Scan() {
+		panic("lexer not ending with EOF")
 	}
 
-	panic("should never reach here")
+	cur := s.lexer.Token() 
+	for s.ignore(cur) {
+		cur = s.lexer.Token()
+	}
+
+	s.last = s.cur
+	if s.last != nil && !s.ignore(s.last) {
+		s.tracker.Add(s.last)
+	}
+	s.cur = cur
+	return true
 }
 
 // Ahead tests is the current token is of the specified type.

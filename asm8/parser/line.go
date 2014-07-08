@@ -84,6 +84,8 @@ func (p *Parser) parseArgs() ([]*ast.Arg, bool) {
 			return ret, false
 		}
 
+		ret = append(ret, arg)
+
 		if p.ahead(tt.Semi) {
 			return ret, true
 		}

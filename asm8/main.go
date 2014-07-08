@@ -5,8 +5,10 @@ import (
 	"fmt"
 	"os"
 
+	"e8vm.net/leaf/asm8/ast"
 	"e8vm.net/leaf/asm8/lexer"
 	"e8vm.net/leaf/asm8/parser"
+	"e8vm.net/leaf/tools/prt"
 )
 
 func main() {
@@ -70,6 +72,7 @@ func mainLex(args []string) {
 
 func mainParse(args []string) {
 	fset := flag.NewFlagSet("asm8-parse", flag.ExitOnError)
+	astFlag := fset.Bool("ast", false, "print AST instead of token tree")
 	fset.Parse(args)
 
 	files := fset.Args()
@@ -89,9 +92,18 @@ func mainParse(args []string) {
 	}
 
 	parser := parser.New(fin, f)
-	_, errs := parser.Parse()
+	res, errs := parser.Parse()
 
-	parser.PrintTree(os.Stdout)
+	if *astFlag {
+		if res != nil {
+			p := prt.Stdout()
+			p.Indent = "    "
+			ast.Print(p, res)
+		}
+	} else {
+		parser.PrintTree(os.Stdout)
+	}
+
 	for _, e := range errs {
 		onError(e)
 	}
