@@ -55,9 +55,7 @@ func New(in io.Reader, filename string) *Parser {
 	ret := new(Parser)
 	ret.filename = filename
 	ret.lx = lexer.New(in, filename)
-	ret.s = lexin.NewScanner(ret.lx)
-
-	ret.s.SkipFunc = isComment
+	ret.s = lexin.NewScanner(ret.lx, isComment)
 
 	return ret
 }
