@@ -1,4 +1,4 @@
 func main() {
-    putc('h')
+    putc('h') // some comment
     putc('i')
 }

@@ -19,7 +19,11 @@ func mainLex(args []string) {
 		return
 	}
 
-	onError := func(e error) { fmt.Fprintln(os.Stderr, e) }
+	onError := func(e error) {
+		if e != nil {
+			fmt.Fprintln(os.Stderr, e)
+		}
+	}
 
 	for _, f := range files {
 		fmt.Printf("[%s]\n", f)
@@ -37,5 +41,7 @@ func mainLex(args []string) {
 			tok := lex.Token()
 			fmt.Println(tok.String())
 		}
+
+		onError(fin.Close())
 	}
 }
