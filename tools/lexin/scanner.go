@@ -69,7 +69,7 @@ func (s *Scanner) Shift() bool {
 		panic("lexer not ending with EOF")
 	}
 
-	cur := s.lexer.Token() 
+	cur := s.lexer.Token()
 	for s.ignore(cur) {
 		cur = s.lexer.Token()
 	}
