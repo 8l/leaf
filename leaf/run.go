@@ -5,7 +5,7 @@ import (
 	"io/ioutil"
 	"os"
 
-	"e8vm.net/leaf/script"
+	"e8vm.net/leaf/leaf/script"
 )
 
 func mainRun(args []string) {

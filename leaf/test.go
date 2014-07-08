@@ -3,8 +3,8 @@ package main
 import (
 	"os"
 
-	"e8vm.net/leaf/ir"
-	"e8vm.net/leaf/ir/types"
+	"e8vm.net/leaf/leaf/ir"
+	"e8vm.net/leaf/leaf/ir/types"
 )
 
 func mainTest(_ []string) {

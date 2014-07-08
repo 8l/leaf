@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"os"
 
-	"e8vm.net/leaf/lexer"
+	"e8vm.net/leaf/leaf/lexer"
 )
 
 func mainLex(args []string) {

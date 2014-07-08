@@ -5,9 +5,9 @@ import (
 	"fmt"
 	"os"
 
-	"e8vm.net/leaf/ast"
-	"e8vm.net/leaf/parser"
-	"e8vm.net/util/prt"
+	"e8vm.net/leaf/leaf/ast"
+	"e8vm.net/leaf/leaf/parser"
+	"e8vm.net/leaf/tools/prt"
 )
 
 func mainParse(args []string) {

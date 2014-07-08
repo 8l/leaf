@@ -1,4 +1,4 @@
-[![BuildStatus](https://travis-ci.org/e8vm/leaf.png?branch=master)](https://travis-ci.org/e8vm/leaf)
+[!BuildStatus](https://travis-ci.org/e8vm/leaf.png?branch=master)](https://travis-ci.org/e8vm/leaf)
 
 Leaf is a programming language designed for bootstraping programming for E8
 virtual machine.  It is still under heavy construction, so it does not have a

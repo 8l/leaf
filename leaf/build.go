@@ -3,9 +3,9 @@ package main
 import (
 	"os"
 
-	"e8vm.net/leaf/codegen"
-	"e8vm.net/leaf/ir"
-	"e8vm.net/leaf/parser"
+	"e8vm.net/leaf/leaf/codegen"
+	"e8vm.net/leaf/leaf/ir"
+	"e8vm.net/leaf/leaf/parser"
 )
 
 func mainBuild(args []string) {
