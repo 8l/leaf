@@ -1,5 +1,3 @@
-[![BuildStatus](https://travis-ci.org/e8vm/asm8.png?branch=master)](https://travis-ci.org/e8vm/asm8)
-
 # asm8
 
 The assembler for E8 virtual machine.
