@@ -142,7 +142,7 @@ func (lx *Lexer) Scan() bool { return !lx.eof }
 func (lx *Lexer) Token() *tok.Token {
 	ret := lx.scanToken()
 	t, isT := ret.Type.(tt.T)
-	if isT && t != tt.Illegal {
+	if isT && t != tt.Illegal && t != tt.Comment {
 		lx.insertSemi = insertSemiTokenMap[t]
 	}
 
