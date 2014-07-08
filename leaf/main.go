@@ -1,11 +1,11 @@
-package main
+package leaf
 
 import (
 	"fmt"
 	"os"
 )
 
-func main() {
+func Main() {
 	args := os.Args
 
 	if len(args) <= 1 {
