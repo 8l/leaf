@@ -36,11 +36,11 @@ func (b *Build) NewFunc(name string, pos *tok.Token) *Func {
 // Find returns the token for the declaration of the identifier.
 // It can be used to check if the name is used to
 // define a function, variable, or constant is
-func (b *Build) Find(name string) *tok.Token {
+func (b *Build) Find(name string) (*tok.Token, SymType) {
 	f := b.funcMap[name]
 	if f != nil {
-		return f.pos
+		return f.pos, SymFunc
 	}
 
-	return nil
+	return nil, SymNone
 }
