@@ -46,14 +46,26 @@ func (f *Func) i3sr(op, s, t uint8, lab string) {
 	f.addLine(newLineSym(i, lab))
 }
 
-// op $t, $s, im
+// op $t, $s, im (signed)
 func (f *Func) i3s(op, t, s uint8, im int16) {
 	i := inst.Iinst(op, s, t, uint16(im))
 	f.addLine(newLine(i))
 }
 
-// op $t, $s, im
+// op $t, $s, im (signed)
 func (f *Func) i3sSym(op, t, s uint8, im string) {
+	i := inst.Iinst(op, s, t, 0)
+	f.addLine(newLineSym(i, im))
+}
+
+// op $t, $s, im (unsigned)
+func (f *Func) i3(op, t, s uint8, im uint16) {
+	i := inst.Iinst(op, s, t, uint16(im))
+	f.addLine(newLine(i))
+}
+
+// op $t, $s, im (unsigned)
+func (f *Func) i3Sym(op, t, s uint8, im string) {
 	i := inst.Iinst(op, s, t, 0)
 	f.addLine(newLineSym(i, im))
 }
@@ -102,4 +114,14 @@ func (f *Func) Slti(t, s uint8, im int16) {
 // SltiSym appends a Slti where the immediate is a symbol
 func (f *Func) SltiSym(t, s uint8, im string) {
 	f.i3sSym(inst.OpSlti, t, s, im)
+}
+
+// Andi appends a Andi
+func (f *Func) Andi(t, s uint8, im uint16) {
+	f.i3(inst.OpSlti, t, s, im)
+}
+
+// AndiSym appends a Andi where the immediate is a symbol
+func (f *Func) AndiSym(t, s uint8, im string) {
+	f.i3Sym(inst.OpAndi, t, s, im)
 }
