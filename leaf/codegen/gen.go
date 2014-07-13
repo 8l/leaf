@@ -64,9 +64,8 @@ func (self *Gen) Gen() []error {
 	}
 
 	// and finally, generate all the function bodies
-	for i, ftree := range self.fileTrees {
-		self.funcGen(self.files[i], ftree)
-	}
+	// for i, ftree := range self.fileTrees {
+	self.funcGen()
 	if len(self.errors) > 0 {
 		return self.errors
 	}
@@ -135,7 +134,7 @@ func (self *Gen) funcDecl(file *ir.File, prog *ast.Program) {
 	// and also add anonymous init functions
 }
 
-func (self *Gen) funcGen(file *ir.File, prog *ast.Program) {
+func (self *Gen) funcGen() {
 	// now generate all the func generate jobs
 	for _, job := range self.tasks {
 		self.defineFunc(job.fn, job.node)
