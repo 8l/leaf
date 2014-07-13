@@ -11,6 +11,7 @@ func NewBuild() *Build {
 	return ret
 }
 
+// NewFunc creates a new function (code segment) in the build.
 func (b *Build) NewFunc() *Func {
 	ret := new(Func)
 	return ret

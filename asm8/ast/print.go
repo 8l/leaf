@@ -8,6 +8,7 @@ import (
 	"e8vm.net/leaf/tools/prt"
 )
 
+// Print prints the AST with a printer.
 func Print(p prt.Iface, n interface{}) {
 	if n == nil {
 		p.Print("! nil")
@@ -48,6 +49,7 @@ func Print(p prt.Iface, n interface{}) {
 	}
 }
 
+// String prints an instruction line using the printer.
 func (i Inst) String() string {
 	buf := new(bytes.Buffer)
 	buf.WriteString(i.Op)
