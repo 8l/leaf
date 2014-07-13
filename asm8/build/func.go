@@ -2,10 +2,12 @@ package build
 
 import (
 	"e8vm.net/e8/inst"
+	"e8vm.net/leaf/tools/tok"
 )
 
 // Func is a continuous memory segment that saves executable instructions.
 type Func struct {
+	pos    *tok.Token
 	name   string
 	lines  []*Line
 	labels map[string]int
