@@ -7,10 +7,11 @@ func example() {
 
 		f1.Label() // add a new label
 		i1 := f1.Inst(inst.Jinst(xxx))
-		i1.Bind("func2")
+		i1.BindLabel("func2")
 
 		f2 := b.DeclFunc("func2")
 
+		b.Build()
 
 		b.Layout()
 		b.LinkLabels()
