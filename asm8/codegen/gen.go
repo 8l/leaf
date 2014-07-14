@@ -38,6 +38,15 @@ func (g *Gen) Gen() []error {
 		return g.errors
 	}
 
+	for _, f := range g.funcs {
+		g.funcGen(f)
+	}
+	if len(g.errors) > 0 {
+		return g.errors
+	}
+
+	// TODO: layout and output
+
 	return g.errors
 }
 
@@ -66,5 +75,86 @@ func (g *Gen) declare(d ast.Decl) {
 		panic("todo")
 	case *ast.Var:
 		panic("todo")
+	}
+}
+
+func (g *Gen) synError(pos *tok.Token, op string) {
+	e := comperr.New(pos, fmt.Errorf("syntax error for %s", op))
+	g.errors = append(g.errors, e)
+}
+
+// returns "" for invalid label
+func parseLabel(arg *ast.Arg) string {
+	if arg.Im != nil {
+		return ""
+	}
+	if arg.Reg != nil {
+		return ""
+	}
+	if arg.AddrReg != nil {
+		return ""
+	}
+	if arg.Sym == nil {
+		return ""
+	}
+
+	return arg.Sym.Lit
+}
+
+func (g *Gen) genJump(fn *build.Func, op string, args []*ast.Arg) bool {
+	if len(args) != 1 {
+		return false
+	}
+
+	lab := parseLabel(args[0])
+	if lab == "" {
+		return false
+	}
+
+	switch op {
+	case "j":
+		fn.J(lab)
+	case "jal":
+		fn.Jal(lab)
+	default:
+		panic("bug")
+	}
+
+	return true
+}
+
+func (g *Gen) funcGen(f *funcTask) {
+	lines := f.ast.Block.Lines // ast node
+	fn := f.build
+
+	for _, line := range lines {
+		if line.Label != nil {
+			label := line.Label
+			t := label.NameToken
+			got := fn.FindLabel(label.Name)
+			if got != nil {
+				g.errorf(t, "label %q already defined", t.Lit)
+				g.errorf(got, "   previously defined here")
+			} else {
+				fn.MarkLabel(label.NameToken)
+			}
+		}
+
+		if line.Inst == nil {
+			continue
+		}
+
+		i := line.Inst // the instruction
+		t := i.OpToken
+		op := i.Op
+		switch op {
+		case "j", "jal":
+			if !g.genJump(fn, op, i.Args) {
+				g.synError(t, op)
+			}
+
+		default:
+			g.errorf(t, "invalid op %q", op)
+		}
 	}
 }

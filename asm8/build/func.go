@@ -1,6 +1,8 @@
 package build
 
 import (
+	"bytes"
+
 	"e8vm.net/e8/inst"
 	"e8vm.net/leaf/tools/tok"
 )
@@ -9,11 +11,18 @@ import (
 type Func struct {
 	pos    *tok.Token
 	name   string
-	lines  []*Line
-	labels map[string]int
+	lines  []*line
+	labels map[string]*label
 }
 
-func (f *Func) addLine(line *Line) {
+func newFunc(name string) *Func {
+	ret := new(Func)
+	ret.name = name
+	ret.labels = make(map[string]*label)
+	return ret
+}
+
+func (f *Func) addLine(line *line) {
 	f.lines = append(f.lines, line)
 }
 
@@ -124,4 +133,40 @@ func (f *Func) Andi(t, s uint8, im uint16) {
 // AndiSym appends a Andi where the immediate is a symbol
 func (f *Func) AndiSym(t, s uint8, im string) {
 	f.i3Sym(inst.OpAndi, t, s, im)
+}
+
+func (f *Func) FindLabel(label string) *tok.Token {
+	get := f.labels[label]
+	if get == nil {
+		return nil
+	}
+	return get.pos
+}
+
+// MarkLabel marks a label at the current writing position.
+func (f *Func) MarkLabel(pos *tok.Token) {
+	name := pos.Lit
+	assert(f.labels[name] == nil)
+	lab := &label{pos, len(f.lines)}
+	f.labels[name] = lab
+}
+
+// emit writes out the code as it is.
+// to have meaningful code, the build has to be generated first.
+func (f *Func) emit(buf *bytes.Buffer) {
+	b := make([]byte, 4)
+
+	for _, line := range f.lines {
+		i := uint32(line.i)
+
+		b[0] = uint8(i)
+		b[1] = uint8(i >> 8)
+		b[2] = uint8(i >> 16)
+		b[3] = uint8(i >> 24)
+
+		_, e := buf.Write(b)
+		if e != nil {
+			panic("bug")
+		}
+	}
 }

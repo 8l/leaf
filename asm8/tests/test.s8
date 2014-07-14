@@ -1,0 +1,7 @@
+func main {
+start:
+    j end
+    j end
+    j end
+end:
+}

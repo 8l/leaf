@@ -6,6 +6,8 @@ import (
 	"os"
 
 	"e8vm.net/leaf/asm8/ast"
+	"e8vm.net/leaf/asm8/build"
+	"e8vm.net/leaf/asm8/codegen"
 	"e8vm.net/leaf/asm8/lexer"
 	"e8vm.net/leaf/asm8/parser"
 	"e8vm.net/leaf/tools/prt"
@@ -27,6 +29,8 @@ func main() {
 		mainLex(args)
 	case "parse":
 		mainParse(args)
+	case "build":
+		mainBuild(args)
 	default:
 		panic("todo")
 	}
@@ -89,6 +93,7 @@ func mainParse(args []string) {
 	if e != nil {
 		onError(e)
 		os.Exit(1)
+		return
 	}
 
 	parser := parser.New(fin, f)
@@ -110,5 +115,64 @@ func mainParse(args []string) {
 
 	if len(errs) > 0 {
 		os.Exit(1)
+		return
 	}
+}
+
+func mainBuild(args []string) {
+	fset := flag.NewFlagSet("asm8-build", flag.ExitOnError)
+	outFlag := fset.String("o", "out.e8", "output e8 image")
+	fset.Parse(args)
+
+	files := fset.Args()
+
+	if len(files) != 1 {
+		fmt.Fprintln(os.Stderr, "expect one single input file.")
+		os.Exit(1)
+	}
+
+	onError := func(e error) {
+		if e == nil {
+			return
+		}
+		if e != nil {
+			fmt.Fprintln(os.Stderr, e)
+			os.Exit(1)
+			panic("not reachable")
+		}
+	}
+
+	onErrors := func(es []error) {
+		if len(es) == 0 {
+			return
+		}
+		for _, e := range es {
+			fmt.Fprintln(os.Stderr, e)
+		}
+		os.Exit(1)
+		panic("not reachable")
+	}
+
+	f := files[0]
+	fin, e := os.Open(f)
+	onError(e)
+
+	parser := parser.New(fin, f)
+	astree, errs := parser.Parse()
+	onErrors(errs)
+
+	onError(fin.Close())
+
+	b := build.NewBuild()
+	gen := codegen.NewGen(b, astree)
+	errs = gen.Gen()
+	onErrors(errs)
+
+	fout, e := os.Create(*outFlag)
+	onError(e)
+
+	e = b.WriteImage(fout)
+	onError(e)
+
+	onError(fout.Close())
 }
