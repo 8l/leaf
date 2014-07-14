@@ -50,7 +50,8 @@ func (b *Build) Find(name string) (*tok.Token, SymType) {
 	return nil, SymNone
 }
 
-// CreateImage writes out the program into an E8 image file
+// WriteImage writes out the program to an output stream
+// in the form of an E8 image.
 func (b *Build) WriteImage(out io.Writer) error {
 	codeBuf := new(bytes.Buffer)
 	for _, f := range b.funcs {

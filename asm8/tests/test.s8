@@ -2,6 +2,6 @@ func main {
 start:
     j end
     j end
-    j end
+    jal end
 end:
 }
