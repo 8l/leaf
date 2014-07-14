@@ -1,5 +1,7 @@
+f=test.s8
+
 all:
-	@ cat test.s8
-	@ asm8 build test.s8
+	@ cat $f
+	@ asm8 build $f
 	@ echo
 	@ e8 dasm out.e8

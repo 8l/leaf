@@ -2,6 +2,7 @@ package codegen
 
 import (
 	"fmt"
+	"math"
 
 	"e8vm.net/e8/inst"
 	"e8vm.net/e8/mem"
@@ -129,13 +130,7 @@ func parseLabel(arg *ast.Arg) (lab string, valid bool) {
 }
 
 func parseReg(arg *ast.Arg) (reg uint8, valid bool) {
-	if arg.Im != nil {
-		return
-	}
-	if arg.AddrReg != nil {
-		return
-	}
-	if arg.Sym != nil {
+	if arg.Im != nil || arg.AddrReg != nil || arg.Sym != nil {
 		return
 	}
 	if arg.Reg == nil {
@@ -151,6 +146,58 @@ func parseReg(arg *ast.Arg) (reg uint8, valid bool) {
 	}
 
 	return uint8(i), true
+}
+
+func parseImm(arg *ast.Arg) (imm int64, valid bool) {
+	if arg.AddrReg != nil || arg.Sym != nil || arg.Reg != nil {
+		return
+	}
+	if arg.Im == nil {
+		return
+	}
+
+	i, e := parseInt(arg.Im.Lit)
+	if e != nil {
+		return
+	}
+	return i, true
+}
+
+func parseAddr(arg *ast.Arg) (r uint8, imm int64, valid bool) {
+	if arg.Reg != nil || arg.Sym != nil {
+		return
+	}
+
+	if arg.AddrReg == nil {
+		if arg.Im == nil {
+			return
+		}
+
+		i, e := parseInt(arg.Im.Lit)
+		if e != nil {
+			return
+		}
+		return 0, i, true
+	}
+
+	reg, e := parseInt(arg.AddrReg.Lit)
+	if e != nil {
+		return
+	}
+	if reg < 0 || reg >= inst.Nreg {
+		return
+	}
+	r = uint8(reg)
+
+	if arg.Im != nil {
+		i, e := parseInt(arg.Im.Lit)
+		if e != nil {
+			return
+		}
+		return r, i, true
+	}
+
+	return r, 0, true
 }
 
 func (g *Gen) funcPrepare(f *funcTask) {
@@ -187,24 +234,23 @@ func (g *Gen) funcGen(f *funcTask) {
 }
 
 func jumpInRange(off int) bool {
-	if off >= (1 << 25) {
-		return false
-	}
-	if off < (-1 << 25) {
-		return false
-	}
+	return off >= (-1<<25) && off < (1<<25)
+}
 
-	return true
+func shamtInRange(sh int64) bool {
+	return sh >= 0 && sh < 32
 }
 
 func branchInRange(off int) bool {
-	if off >= (1 << 15) {
-		return false
-	}
-	if off < (-1 << 15) {
-		return false
-	}
-	return true
+	return off >= (-1<<15) && off < (1<<15)
+}
+
+func imuInRange(i int64) bool {
+	return i >= 0 && i <= math.MaxUint16
+}
+
+func imsInRange(i int64) bool {
+	return i >= math.MinInt16 && i <= math.MaxInt16
 }
 
 func (g *Gen) lineGen(f *funcTask, index int, task *lineTask) {
@@ -261,11 +307,7 @@ func (g *Gen) lineGen(f *funcTask, index int, task *lineTask) {
 		}
 
 		d := int32(delta)
-		if op == "j" {
-			line.Inst = inst.Jinst(inst.OpJ, d)
-		} else {
-			line.Inst = inst.Jinst(inst.OpJal, d)
-		}
+		line.Inst = inst.Jinst(inst.OpCode(op), d)
 
 	case "bne", "beq":
 		// bne/beq $s, $t, <label>
@@ -304,10 +346,195 @@ func (g *Gen) lineGen(f *funcTask, index int, task *lineTask) {
 		}
 
 		d := uint16(int16(delta))
-		if op == "bne" {
-			line.Inst = inst.Iinst(inst.OpBne, rs, rt, d)
-		} else {
-			line.Inst = inst.Iinst(inst.OpBeq, rs, rt, d)
+		line.Inst = inst.Iinst(inst.OpCode(op), rs, rt, d)
+
+	case "add", "sub", "and", "or", "xor", "nor", "slt",
+		"mul", "mulu", "div", "divu", "mod", "modu":
+		if len(args) != 3 {
+			g.errorf(t, "error format, expect: %s $d, $s, $t", op)
+			return
 		}
+
+		rd, valid := parseReg(args[0])
+		if !valid {
+			g.errorf(t, "invalid first arg for %s, expect a reg", op)
+			return
+		}
+		rs, valid := parseReg(args[1])
+		if !valid {
+			g.errorf(t, "invalid second arg for %s, expect a reg", op)
+			return
+		}
+		rt, valid := parseReg(args[2])
+		if !valid {
+			g.errorf(t, "invalid third arg for %s, expect a reg", op)
+			return
+		}
+
+		line.Inst = inst.Rinst(rs, rt, rd, inst.FunctCode(op))
+
+	case "sllv", "srlv", "srav":
+		if len(args) != 3 {
+			g.errorf(t, "error format, expect: %s $d, $t, $s", op)
+			return
+		}
+
+		rd, valid := parseReg(args[0])
+		if !valid {
+			g.errorf(t, "invalid first arg for %s, expect a reg", op)
+			return
+		}
+		rt, valid := parseReg(args[1])
+		if !valid {
+			g.errorf(t, "invalid second arg for %s, expect a reg", op)
+			return
+		}
+		rs, valid := parseReg(args[2])
+		if !valid {
+			g.errorf(t, "invalid third arg for %s, expect a reg", op)
+			return
+		}
+
+		line.Inst = inst.Rinst(rs, rt, rd, inst.FunctCode(op))
+
+	case "sll", "srl", "sra":
+		if len(args) != 3 {
+			g.errorf(t, "error format, expect: %s $d, $t, <shamt>", op)
+			return
+		}
+
+		rd, valid := parseReg(args[0])
+		if !valid {
+			g.errorf(t, "invalid first arg for %s, expect a reg", op)
+			return
+		}
+		rt, valid := parseReg(args[1])
+		if !valid {
+			g.errorf(t, "invalid second arg for %s, expect a reg", op)
+			return
+		}
+		shamt, valid := parseImm(args[2])
+		if !valid {
+			g.errorf(t, "invalid third arg for %s, expect a shamt", op)
+			return
+		}
+		if !shamtInRange(shamt) {
+			g.errorf(t, "shamt out of range", op)
+			return
+		}
+
+		sh := uint8(shamt)
+		line.Inst = inst.RinstShamt(0, rt, rd, sh, inst.FunctCode(op))
+
+	case "andi", "ori":
+		if len(args) != 3 {
+			g.errorf(t, "error format, expect: %s $t, $s, imm", op)
+			return
+		}
+
+		rt, valid := parseReg(args[0])
+		if !valid {
+			g.errorf(t, "invalid first arg for %s, expect a reg", op)
+			return
+		}
+		rs, valid := parseReg(args[1])
+		if !valid {
+			g.errorf(t, "invalid second arg for %s, expect a reg", op)
+			return
+		}
+		// TODO: allow using constant ident here
+		im, valid := parseImm(args[2])
+		if !valid {
+			g.errorf(t, "invalid third arg for %s, expect an immediate", op)
+			return
+		}
+		if !imuInRange(im) {
+			g.errorf(t, "unsigned immediate out of range", op)
+			return
+		}
+
+		imu := uint16(im)
+		line.Inst = inst.Iinst(inst.OpCode(op), rs, rt, imu)
+
+	case "addi", "slti":
+		if len(args) != 3 {
+			g.errorf(t, "error format, expect: %s $t, $s, imm", op)
+			return
+		}
+
+		rt, valid := parseReg(args[0])
+		if !valid {
+			g.errorf(t, "invalid first arg for %s, expect a reg", op)
+			return
+		}
+		rs, valid := parseReg(args[1])
+		if !valid {
+			g.errorf(t, "invalid second arg for %s, expect a reg", op)
+			return
+		}
+		// TODO: allow using constant ident here
+		im, valid := parseImm(args[2])
+		if !valid {
+			g.errorf(t, "invalid third arg for %s, expect an immediate", op)
+			return
+		}
+		if !imsInRange(im) {
+			g.errorf(t, "signed immediate out of range", op)
+			return
+		}
+
+		ims := uint16(int16(im))
+		line.Inst = inst.Iinst(inst.OpCode(op), rs, rt, ims)
+
+	case "lui":
+		if len(args) != 2 {
+			g.errorf(t, "error format, expect: %s %t, imm", op)
+			return
+		}
+
+		rt, valid := parseReg(args[0])
+		if !valid {
+			g.errorf(t, "invalid first arg for %s, expect a reg", op)
+			return
+		}
+
+		// TODO: allow using constant ident here
+		im, valid := parseImm(args[1])
+		if !valid {
+			g.errorf(t, "invalid second arg for %s, expect an immediate", op)
+			return
+		}
+		if !imuInRange(im) {
+			g.errorf(t, "unsigned immediate out of range", op)
+			return
+		}
+
+		imu := uint16(im)
+		line.Inst = inst.Iinst(inst.OpCode(op), 0, rt, imu)
+
+	case "lw", "lu", "lhu", "lb", "lbu", "sw", "sh", "sb":
+		if len(args) != 2 {
+			g.errorf(t, "error format, expect: %s $t, imm($s)", op)
+			return
+		}
+		rt, valid := parseReg(args[0])
+		if !valid {
+			g.errorf(t, "invalid first arg for %s, expect a reg", op)
+			return
+		}
+		rs, im, valid := parseAddr(args[1])
+		if !valid {
+			g.errorf(t, "invalid second arg for %s, expect an address", op)
+			return
+		}
+		if !imsInRange(im) {
+			g.errorf(t, "signed immediate out of range", op)
+			return
+		}
+		ims := uint16(int16(im))
+		line.Inst = inst.Iinst(inst.OpCode(op), rs, rt, ims)
+
+	default:
+		g.errorf(t, "unknown instruction op name %q", op)
 	}
 }
