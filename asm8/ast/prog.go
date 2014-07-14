@@ -11,6 +11,8 @@ type Decl interface{}
 type Program struct {
 	Filename string
 	Decls    []Decl
+
+	EOFToken *tok.Token
 }
 
 // BasicType defines the basic data types.

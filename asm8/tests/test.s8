@@ -1,7 +1,9 @@
 func main {
 start:
-    j end
-    j end
-    jal end
+    j main
+    j start
+some:
+    bne $0, $1, some // this 
 end:
+
 }

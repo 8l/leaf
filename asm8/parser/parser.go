@@ -48,6 +48,8 @@ func (p *Parser) Parse() (*ast.Program, []error) {
 		}
 	}
 
+	ret.EOFToken = p.s.Cur()
+
 	return ret, p.Errors()
 }
 

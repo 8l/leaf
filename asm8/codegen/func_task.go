@@ -8,4 +8,14 @@ import (
 type funcTask struct {
 	build *build.Func
 	ast   *ast.Func
+
+	lines []*lineTask
+	start uint32
+}
+
+func newFuncTask(b *build.Func, a *ast.Func) *funcTask {
+	ret := new(funcTask)
+	ret.build = b
+	ret.ast = a
+	return ret
 }

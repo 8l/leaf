@@ -3,6 +3,8 @@ package codegen
 import (
 	"fmt"
 
+	"e8vm.net/e8/inst"
+	"e8vm.net/e8/mem"
 	"e8vm.net/leaf/asm8/ast"
 	"e8vm.net/leaf/asm8/build"
 	"e8vm.net/leaf/tools/comperr"
@@ -11,9 +13,10 @@ import (
 
 // Gen generates the code into a build.
 type Gen struct {
-	build *build.Build
-	prog  *ast.Program
-	funcs []*funcTask
+	build   *build.Build
+	prog    *ast.Program
+	funcs   []*funcTask
+	funcMap map[string]*funcTask
 
 	errors []error
 }
@@ -24,6 +27,8 @@ func NewGen(b *build.Build, p *ast.Program) *Gen {
 	ret := new(Gen)
 	ret.build = b
 	ret.prog = p
+
+	ret.funcMap = make(map[string]*funcTask)
 
 	return ret
 }
@@ -39,13 +44,35 @@ func (g *Gen) Gen() []error {
 	}
 
 	for _, f := range g.funcs {
-		g.funcGen(f)
+		g.funcPrepare(f)
 	}
 	if len(g.errors) > 0 {
 		return g.errors
 	}
 
-	// TODO: layout and output
+	// layout
+	offset := uint32(0)
+	for _, f := range g.funcs {
+		f.start = mem.SegCode + offset
+		nline := len(f.lines)
+		if nline > int(mem.SegSize)/4 {
+			g.errorf(f.ast.NameToken,
+				"too many instructions in this function")
+			return g.errors
+		}
+
+		offset += 4 * uint32(nline)
+		if offset > mem.SegSize {
+			g.errorf(g.prog.EOFToken, "output code too large")
+		}
+	}
+
+	for _, f := range g.funcs {
+		g.funcGen(f)
+	}
+	if len(g.errors) > 0 {
+		return g.errors
+	}
 
 	return g.errors
 }
@@ -68,8 +95,9 @@ func (g *Gen) declare(d ast.Decl) {
 		}
 
 		f := g.build.NewFunc(name, d.NameToken)
-		task := &funcTask{f, d}
+		task := newFuncTask(f, d)
 		g.funcs = append(g.funcs, task)
+		g.funcMap[name] = task
 
 	case *ast.Const:
 		panic("todo")
@@ -83,50 +111,53 @@ func (g *Gen) synError(pos *tok.Token, op string) {
 	g.errors = append(g.errors, e)
 }
 
-// returns "" for invalid label
-func parseLabel(arg *ast.Arg) string {
+func parseLabel(arg *ast.Arg) (lab string, valid bool) {
 	if arg.Im != nil {
-		return ""
+		return
 	}
 	if arg.Reg != nil {
-		return ""
+		return
 	}
 	if arg.AddrReg != nil {
-		return ""
+		return
 	}
 	if arg.Sym == nil {
-		return ""
+		return
 	}
 
-	return arg.Sym.Lit
+	return arg.Sym.Lit, true
 }
 
-func (g *Gen) genJump(fn *build.Func, op string, args []*ast.Arg) bool {
-	if len(args) != 1 {
-		return false
+func parseReg(arg *ast.Arg) (reg uint8, valid bool) {
+	if arg.Im != nil {
+		return
+	}
+	if arg.AddrReg != nil {
+		return
+	}
+	if arg.Sym != nil {
+		return
+	}
+	if arg.Reg == nil {
+		return
 	}
 
-	lab := parseLabel(args[0])
-	if lab == "" {
-		return false
+	i, e := parseInt(arg.Reg.Lit)
+	if e != nil {
+		return
+	}
+	if i < 0 || i >= inst.Nreg {
+		return
 	}
 
-	switch op {
-	case "j":
-		fn.J(lab)
-	case "jal":
-		fn.Jal(lab)
-	default:
-		panic("bug")
-	}
-
-	return true
+	return uint8(i), true
 }
 
-func (g *Gen) funcGen(f *funcTask) {
+func (g *Gen) funcPrepare(f *funcTask) {
 	lines := f.ast.Block.Lines // ast node
 	fn := f.build
 
+	// scan labels and build line tasks
 	for _, line := range lines {
 		if line.Label != nil {
 			label := line.Label
@@ -144,17 +175,139 @@ func (g *Gen) funcGen(f *funcTask) {
 			continue
 		}
 
-		i := line.Inst // the instruction
-		t := i.OpToken
-		op := i.Op
-		switch op {
-		case "j", "jal":
-			if !g.genJump(fn, op, i.Args) {
-				g.synError(t, op)
+		bline := fn.NewLine()
+		f.lines = append(f.lines, &lineTask{bline, line})
+	}
+}
+
+func (g *Gen) funcGen(f *funcTask) {
+	for i, task := range f.lines {
+		g.lineGen(f, i, task)
+	}
+}
+
+func jumpInRange(off int) bool {
+	if off >= (1 << 25) {
+		return false
+	}
+	if off < (-1 << 25) {
+		return false
+	}
+
+	return true
+}
+
+func branchInRange(off int) bool {
+	if off >= (1 << 15) {
+		return false
+	}
+	if off < (-1 << 15) {
+		return false
+	}
+	return true
+}
+
+func (g *Gen) lineGen(f *funcTask, index int, task *lineTask) {
+	fn := f.build
+	op := task.ast.Inst.Op
+	t := task.ast.Inst.OpToken
+	args := task.ast.Inst.Args
+	line := task.build
+
+	switch op {
+	case "j", "jal":
+		// j/jal <label>
+		if len(args) != 1 {
+			g.errorf(t, "error format, expect: %s <label>", op)
+			return
+		}
+
+		lab, valid := parseLabel(args[0])
+		if !valid {
+			g.errorf(t, "invalid arg for %s, expect a label", op)
+			return
+		}
+
+		local := fn.LocateLabel(lab)
+		if local >= 0 {
+			delta := local - (index + 1)
+			if !jumpInRange(delta) {
+				g.errorf(t, "jump out of range")
+				return
 			}
 
-		default:
-			g.errorf(t, "invalid op %q", op)
+			d := int32(delta)
+			if op == "j" {
+				line.Inst = inst.Jinst(inst.OpJ, d)
+			} else {
+				// "jal"
+				line.Inst = inst.Jinst(inst.OpJal, d)
+			}
+			return
+		}
+
+		target := g.funcMap[lab]
+		if target == nil {
+			g.errorf(t, "jump target %q not found", lab)
+			return
+		}
+
+		here := int(f.start/4) + index
+		there := int(target.start / 4)
+		delta := there - (here + 1)
+		if !jumpInRange(delta) {
+			g.errorf(t, "jump out of range")
+			return
+		}
+
+		d := int32(delta)
+		if op == "j" {
+			line.Inst = inst.Jinst(inst.OpJ, d)
+		} else {
+			line.Inst = inst.Jinst(inst.OpJal, d)
+		}
+
+	case "bne", "beq":
+		// bne/beq $s, $t, <label>
+		if len(args) != 3 {
+			g.errorf(t, "error format, expext: %s $s, $t, <label>", op)
+			return
+		}
+
+		rs, valid := parseReg(args[0])
+		if !valid {
+			g.errorf(t, "invalid first arg for %s, expect a reg", op)
+			return
+		}
+		rt, valid := parseReg(args[1])
+		if !valid {
+			g.errorf(t, "invalid second arg for %s, expect a reg", op)
+			return
+		}
+		lab, valid := parseLabel(args[2])
+		if !valid {
+			g.errorf(t, "invalid third arg for %s, expect a label", op)
+			return
+		}
+
+		local := fn.LocateLabel(lab)
+		if local < 0 {
+			// label not found
+			g.errorf(t, "label %q not found", lab)
+			return
+		}
+
+		delta := local - (index + 1)
+		if !branchInRange(delta) {
+			g.errorf(t, "branch out of range, try use a jump")
+			return
+		}
+
+		d := uint16(int16(delta))
+		if op == "bne" {
+			line.Inst = inst.Iinst(inst.OpBne, rs, rt, d)
+		} else {
+			line.Inst = inst.Iinst(inst.OpBeq, rs, rt, d)
 		}
 	}
 }
