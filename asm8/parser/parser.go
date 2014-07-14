@@ -42,8 +42,8 @@ func (p *Parser) Parse() (*ast.Program, []error) {
 	ret.Filename = p.filename
 
 	for !p.s.EOF() {
-		d := p.parseDecls()
-		if d != nil {
+		ds := p.parseDecls()
+		for _, d := range ds {
 			ret.Decls = append(ret.Decls, d)
 		}
 	}

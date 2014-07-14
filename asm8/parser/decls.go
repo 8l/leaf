@@ -5,16 +5,16 @@ import (
 	"e8vm.net/leaf/asm8/lexer/tt"
 )
 
-func (p *Parser) parseDecls() ast.Decl {
+func (p *Parser) parseDecls() []ast.Decl {
 	switch {
 	case p.ahead(tt.Func):
-		return p.parseFunc()
+		return []ast.Decl{p.parseFunc()}
 	case p.ahead(tt.Var):
 		panic("todo")
-		return p.parseVar()
+		return p.parseVars()
 	case p.ahead(tt.Const):
 		panic("todo")
-		return p.parseVar()
+		return p.parseConsts()
 	}
 
 	p.parseErrorDecl()
@@ -88,11 +88,66 @@ func (p *Parser) parseBlock() *ast.Block {
 	return ret
 }
 
-func (p *Parser) parseVar() *ast.Var {
+func (p *Parser) parseVars() []ast.Decl {
 	p.push("var")
 	defer p.pop()
 
+	var ret []ast.Decl
+	err := func() []ast.Decl {
+		p.skipUntil(tt.Semi)
+		return ret
+	}
+
+	if !p.expect(tt.Var) {
+		return err()
+	}
+
+	if p.accept(tt.Lparen) {
+		for {
+			if p.accept(tt.Rparen) {
+				break
+			}
+
+			v := p.parseVarSpec()
+			if v != nil {
+				ret = append(ret, v)
+			}
+		}
+
+		if !p.expect(tt.Semi) {
+			return err()
+		}
+		return ret
+	}
+
+	v := p.parseVarSpec()
+	if v != nil {
+		ret = append(ret, v)
+	}
+
+	return ret
+}
+
+func (p *Parser) parseVarSpec() *ast.Var {
+	p.push("var-spec")
+	defer p.pop()
+
+	ret := new(ast.Var)
+	err := func() *ast.Var {
+		p.skipUntil(tt.Semi)
+		return ret
+	}
+
+	if !p.expect(tt.Ident) {
+		return err()
+	}
+
 	panic("todo")
+}
+
+func (p *Parser) parseConsts() []ast.Decl {
+	panic("todo")
+	return nil
 }
 
 func (p *Parser) parseConst() *ast.Const {

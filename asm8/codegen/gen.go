@@ -253,6 +253,36 @@ func imsInRange(i int64) bool {
 	return i >= math.MinInt16 && i <= math.MaxInt16
 }
 
+func indexStr(i int) string {
+	switch i {
+	case 1:
+		return "first"
+	case 2:
+		return "second"
+	case 3:
+		return "third"
+	case 4:
+		return "forth"
+	default:
+		panic("bug")
+	}
+}
+
+func (g *Gen) invalidArg(t *tok.Token, op string, i int, expect string) {
+	istr := indexStr(i + 1)
+	article := "a"
+	if expect == "address" {
+		article = "an"
+	}
+	g.errorf(t, "invalid %s arg for %s, expect %s %s",
+		istr, op, article, expect,
+	)
+}
+
+func (g *Gen) errorFmt(t *tok.Token, op string, argfmt string) {
+	g.errorf(t, "error format;  expect: %s %s", op, argfmt)
+}
+
 func (g *Gen) lineGen(f *funcTask, index int, task *lineTask) {
 	fn := f.build
 	op := task.ast.Inst.Op
@@ -264,13 +294,12 @@ func (g *Gen) lineGen(f *funcTask, index int, task *lineTask) {
 	case "j", "jal":
 		// j/jal <label>
 		if len(args) != 1 {
-			g.errorf(t, "error format, expect: %s <label>", op)
+			g.errorFmt(t, op, "<label>")
 			return
 		}
-
 		lab, valid := parseLabel(args[0])
 		if !valid {
-			g.errorf(t, "invalid arg for %s, expect a label", op)
+			g.invalidArg(t, op, 0, "label")
 			return
 		}
 
@@ -312,23 +341,23 @@ func (g *Gen) lineGen(f *funcTask, index int, task *lineTask) {
 	case "bne", "beq":
 		// bne/beq $s, $t, <label>
 		if len(args) != 3 {
-			g.errorf(t, "error format, expext: %s $s, $t, <label>", op)
+			g.errorFmt(t, op, "$s, $t, <label>")
 			return
 		}
 
 		rs, valid := parseReg(args[0])
 		if !valid {
-			g.errorf(t, "invalid first arg for %s, expect a reg", op)
+			g.invalidArg(t, op, 0, "reg")
 			return
 		}
 		rt, valid := parseReg(args[1])
 		if !valid {
-			g.errorf(t, "invalid second arg for %s, expect a reg", op)
+			g.invalidArg(t, op, 1, "reg")
 			return
 		}
 		lab, valid := parseLabel(args[2])
 		if !valid {
-			g.errorf(t, "invalid third arg for %s, expect a label", op)
+			g.invalidArg(t, op, 2, "label")
 			return
 		}
 
@@ -351,23 +380,23 @@ func (g *Gen) lineGen(f *funcTask, index int, task *lineTask) {
 	case "add", "sub", "and", "or", "xor", "nor", "slt",
 		"mul", "mulu", "div", "divu", "mod", "modu":
 		if len(args) != 3 {
-			g.errorf(t, "error format, expect: %s $d, $s, $t", op)
+			g.errorFmt(t, op, "$d, $s, $t")
 			return
 		}
 
 		rd, valid := parseReg(args[0])
 		if !valid {
-			g.errorf(t, "invalid first arg for %s, expect a reg", op)
+			g.invalidArg(t, op, 0, "reg")
 			return
 		}
 		rs, valid := parseReg(args[1])
 		if !valid {
-			g.errorf(t, "invalid second arg for %s, expect a reg", op)
+			g.invalidArg(t, op, 1, "reg")
 			return
 		}
 		rt, valid := parseReg(args[2])
 		if !valid {
-			g.errorf(t, "invalid third arg for %s, expect a reg", op)
+			g.invalidArg(t, op, 2, "reg")
 			return
 		}
 
@@ -375,23 +404,23 @@ func (g *Gen) lineGen(f *funcTask, index int, task *lineTask) {
 
 	case "sllv", "srlv", "srav":
 		if len(args) != 3 {
-			g.errorf(t, "error format, expect: %s $d, $t, $s", op)
+			g.errorFmt(t, op, "$d, $t, $s")
 			return
 		}
 
 		rd, valid := parseReg(args[0])
 		if !valid {
-			g.errorf(t, "invalid first arg for %s, expect a reg", op)
+			g.invalidArg(t, op, 0, "reg")
 			return
 		}
 		rt, valid := parseReg(args[1])
 		if !valid {
-			g.errorf(t, "invalid second arg for %s, expect a reg", op)
+			g.invalidArg(t, op, 1, "reg")
 			return
 		}
 		rs, valid := parseReg(args[2])
 		if !valid {
-			g.errorf(t, "invalid third arg for %s, expect a reg", op)
+			g.invalidArg(t, op, 2, "reg")
 			return
 		}
 
@@ -399,23 +428,23 @@ func (g *Gen) lineGen(f *funcTask, index int, task *lineTask) {
 
 	case "sll", "srl", "sra":
 		if len(args) != 3 {
-			g.errorf(t, "error format, expect: %s $d, $t, <shamt>", op)
+			g.errorFmt(t, op, "$d, $t, shamt")
 			return
 		}
 
 		rd, valid := parseReg(args[0])
 		if !valid {
-			g.errorf(t, "invalid first arg for %s, expect a reg", op)
+			g.invalidArg(t, op, 0, "reg")
 			return
 		}
 		rt, valid := parseReg(args[1])
 		if !valid {
-			g.errorf(t, "invalid second arg for %s, expect a reg", op)
+			g.invalidArg(t, op, 1, "reg")
 			return
 		}
 		shamt, valid := parseImm(args[2])
 		if !valid {
-			g.errorf(t, "invalid third arg for %s, expect a shamt", op)
+			g.invalidArg(t, op, 2, "shamt")
 			return
 		}
 		if !shamtInRange(shamt) {
@@ -428,24 +457,24 @@ func (g *Gen) lineGen(f *funcTask, index int, task *lineTask) {
 
 	case "andi", "ori":
 		if len(args) != 3 {
-			g.errorf(t, "error format, expect: %s $t, $s, imm", op)
+			g.errorFmt(t, op, "$t, $s, imm")
 			return
 		}
 
 		rt, valid := parseReg(args[0])
 		if !valid {
-			g.errorf(t, "invalid first arg for %s, expect a reg", op)
+			g.invalidArg(t, op, 0, "reg")
 			return
 		}
 		rs, valid := parseReg(args[1])
 		if !valid {
-			g.errorf(t, "invalid second arg for %s, expect a reg", op)
+			g.invalidArg(t, op, 1, "reg")
 			return
 		}
 		// TODO: allow using constant ident here
 		im, valid := parseImm(args[2])
 		if !valid {
-			g.errorf(t, "invalid third arg for %s, expect an immediate", op)
+			g.invalidArg(t, op, 2, "immediate")
 			return
 		}
 		if !imuInRange(im) {
@@ -458,24 +487,24 @@ func (g *Gen) lineGen(f *funcTask, index int, task *lineTask) {
 
 	case "addi", "slti":
 		if len(args) != 3 {
-			g.errorf(t, "error format, expect: %s $t, $s, imm", op)
+			g.errorFmt(t, op, "$t, $s, imm")
 			return
 		}
 
 		rt, valid := parseReg(args[0])
 		if !valid {
-			g.errorf(t, "invalid first arg for %s, expect a reg", op)
+			g.invalidArg(t, op, 0, "reg")
 			return
 		}
 		rs, valid := parseReg(args[1])
 		if !valid {
-			g.errorf(t, "invalid second arg for %s, expect a reg", op)
+			g.invalidArg(t, op, 1, "reg")
 			return
 		}
 		// TODO: allow using constant ident here
 		im, valid := parseImm(args[2])
 		if !valid {
-			g.errorf(t, "invalid third arg for %s, expect an immediate", op)
+			g.invalidArg(t, op, 2, "immediate")
 			return
 		}
 		if !imsInRange(im) {
@@ -488,20 +517,20 @@ func (g *Gen) lineGen(f *funcTask, index int, task *lineTask) {
 
 	case "lui":
 		if len(args) != 2 {
-			g.errorf(t, "error format, expect: %s %t, imm", op)
+			g.errorFmt(t, op, "$t, imm")
 			return
 		}
 
 		rt, valid := parseReg(args[0])
 		if !valid {
-			g.errorf(t, "invalid first arg for %s, expect a reg", op)
+			g.invalidArg(t, op, 0, "reg")
 			return
 		}
 
 		// TODO: allow using constant ident here
 		im, valid := parseImm(args[1])
 		if !valid {
-			g.errorf(t, "invalid second arg for %s, expect an immediate", op)
+			g.invalidArg(t, op, 1, "immediate")
 			return
 		}
 		if !imuInRange(im) {
@@ -514,17 +543,17 @@ func (g *Gen) lineGen(f *funcTask, index int, task *lineTask) {
 
 	case "lw", "lu", "lhu", "lb", "lbu", "sw", "sh", "sb":
 		if len(args) != 2 {
-			g.errorf(t, "error format, expect: %s $t, imm($s)", op)
+			g.errorFmt(t, op, "$t, imm($s)")
 			return
 		}
 		rt, valid := parseReg(args[0])
 		if !valid {
-			g.errorf(t, "invalid first arg for %s, expect a reg", op)
+			g.invalidArg(t, op, 0, "reg")
 			return
 		}
 		rs, im, valid := parseAddr(args[1])
 		if !valid {
-			g.errorf(t, "invalid second arg for %s, expect an address", op)
+			g.invalidArg(t, op, 1, "address")
 			return
 		}
 		if !imsInRange(im) {
