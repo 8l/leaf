@@ -24,10 +24,9 @@ type Const struct {
 
 // Var defines a memory segment.
 type Var struct {
-	Name     string
-	Size     int // 0 for auto, 1 for single
-	Type     string
-	IsString bool
+	Name string
+	Size int // 0 for auto, 1 for single
+	Type string
 
 	InitValues []*tok.Token
 	InitValue  *tok.Token

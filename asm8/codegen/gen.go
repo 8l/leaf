@@ -87,24 +87,34 @@ func (g *Gen) errorf(pos *tok.Token, f string, args ...interface{}) {
 func (g *Gen) declare(d ast.Decl) {
 	switch d := d.(type) {
 	case *ast.Func:
-		name := d.Name
-		pos, typ := g.build.Find(name)
-		if pos != nil {
-			g.errorf(d.NameToken, "%q already defined as a %s", name, typ)
-			g.errorf(pos, "  %q previously defined here", name)
-			return
-		}
-
-		f := g.build.NewFunc(name, d.NameToken)
-		task := newFuncTask(f, d)
-		g.funcs = append(g.funcs, task)
-		g.funcMap[name] = task
-
+		g.funcDecl(d)
 	case *ast.Const:
 		panic("todo")
 	case *ast.Var:
-		panic("todo")
+		g.varDecl(d)
 	}
+}
+
+func (g *Gen) varDecl(d *ast.Var) {
+	if d.Type == "str" {
+
+	}
+	panic("todo")
+}
+
+func (g *Gen) funcDecl(d *ast.Func) {
+	name := d.Name
+	pos, typ := g.build.Find(name)
+	if pos != nil {
+		g.errorf(d.NameToken, "%q already defined as a %s", name, typ)
+		g.errorf(pos, "  %q previously defined here", name)
+		return
+	}
+
+	f := g.build.NewFunc(name, d.NameToken)
+	task := newFuncTask(f, d)
+	g.funcs = append(g.funcs, task)
+	g.funcMap[name] = task
 }
 
 func (g *Gen) synError(pos *tok.Token, op string) {

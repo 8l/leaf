@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"reflect"
 
+	"e8vm.net/leaf/asm8/lexer/tt"
 	"e8vm.net/leaf/tools/prt"
 )
 
@@ -44,6 +45,16 @@ func Print(p prt.Iface, n interface{}) {
 			p.Print("   ", n.Inst.String())
 		}
 
+	case *Var:
+		if n.InitValue != nil && n.InitValue.Type.Code() == tt.String.Code() {
+			p.Printf("+ var: %s %s = %s", n.Name, n.Type, n.InitValue.Lit)
+		} else if n.Size == 0 {
+			p.Printf("+ var: %s []%s", n.Name, n.Type)
+		} else if n.Size == 1 {
+			p.Printf("+ var: %s %s", n.Name, n.Type)
+		} else {
+			p.Printf("+ var: %s [%d]%s", n.Name, n.Size, n.Type)
+		}
 	default:
 		p.Printf("? %s: %s", reflect.TypeOf(n), n)
 	}

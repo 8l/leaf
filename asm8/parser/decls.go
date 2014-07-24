@@ -135,7 +135,7 @@ func (p *Parser) parseVarType(v *ast.Var) bool {
 		if p.accept(tt.Int) {
 			v.SizeToken = p.last()
 		} else {
-			v.Size = 0 // automatic determined
+			v.Size = 0 // sizeless, auto determined
 		}
 
 		if !p.expect(tt.Rbrack) {
@@ -181,7 +181,6 @@ func (p *Parser) parseVarValue(v *ast.Var) bool {
 	} else if p.accept(tt.String) {
 		p.extend("var-init-string")
 		defer p.pop()
-		v.IsString = true
 		v.InitValue = p.last()
 	} else if p.accept(tt.Int) || p.accept(tt.Char) || p.accept(tt.Float) {
 		p.extend("var-init-single")
