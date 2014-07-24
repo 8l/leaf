@@ -17,6 +17,10 @@ func (lx *Lexer) scanOperator(r rune) tt.T {
 		return tt.Lbrace
 	case '}':
 		return tt.Rbrace
+	case '[':
+		return tt.Lbrack
+	case ']':
+		return tt.Rbrack
 	case '=':
 		return tt.Assign
 	case '$':

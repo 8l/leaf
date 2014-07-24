@@ -26,8 +26,10 @@ const (
 	operatorBegin
 
 	Lparen // (
+	Lbrack // [
 	Lbrace // {
 	Rparen // )
+	Rbrack // ]
 	Rbrace // }
 
 	Assign // =
@@ -45,19 +47,6 @@ const (
 	Var
 	Func
 	keywordEnd
-
-	// types
-
-	typeBegin
-	U8
-	I8
-	U16
-	I16
-	U32
-	I32
-	F64
-	Str
-	typeEnd
 )
 
 // Code returns the integer code for the token type.
@@ -73,14 +62,9 @@ func (t T) IsKeyword() bool {
 	return keywordBegin < t && t < keywordEnd
 }
 
-// IsType tests if it is a type token type.
-func (t T) IsType() bool {
-	return typeBegin < t && t < typeEnd
-}
-
 // IsReserved tests if it is a reserved ident (a keyword or a type).
 func (t T) IsReserved() bool {
-	return t.IsKeyword() || t.IsType()
+	return t.IsKeyword()
 }
 
 // IsLiteral tests if it is a literal type.

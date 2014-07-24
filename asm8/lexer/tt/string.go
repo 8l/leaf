@@ -16,8 +16,10 @@ var strs = map[T]string{
 
 	Lparen: "(",
 	Lbrace: "{",
+	Lbrack: "[",
 	Rparen: ")",
 	Rbrace: "}",
+	Rbrack: "]",
 
 	Assign: "=",
 	Dollar: "$",
@@ -28,15 +30,6 @@ var strs = map[T]string{
 	Const: "const",
 	Var:   "var",
 	Func:  "func",
-
-	U8:  "u8",
-	I8:  "i8",
-	U16: "u16",
-	I16: "i16",
-	U32: "u32",
-	I32: "i32",
-	F64: "f64",
-	Str: "str",
 }
 
 func (t T) String() string {
@@ -52,9 +45,6 @@ var reserves = func() map[string]T {
 		ret[strs[i]] = i
 	}
 
-	for i := typeBegin + 1; i < typeEnd; i++ {
-		ret[strs[i]] = i
-	}
 	return ret
 }()
 

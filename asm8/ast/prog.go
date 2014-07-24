@@ -15,24 +15,10 @@ type Program struct {
 	EOFToken *tok.Token
 }
 
-// BasicType defines the basic data types.
-type BasicType int
-
-// Basic data types with signed/unsigned and of all sizes.
-const (
-	U8 BasicType = iota
-	I8
-	U16
-	I16
-	U32
-	I32
-	F64
-)
-
 // Const defines a constant number.
 type Const struct {
 	Name  string
-	Type  BasicType
+	Type  string
 	Value int
 }
 
@@ -40,11 +26,13 @@ type Const struct {
 type Var struct {
 	Name     string
 	Size     int // 0 for auto, 1 for single
-	Type     BasicType
+	Type     string
 	IsString bool
 
-	Data    []int
-	DataStr string
+	InitValues []*tok.Token
+	InitValue  *tok.Token
+	NameToken  *tok.Token
+	SizeToken  *tok.Token
 }
 
 // Func defines a code segment.

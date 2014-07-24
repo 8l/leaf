@@ -6,9 +6,6 @@ func Keywords() []T { return keywordList }
 // Operators lists all the operator types
 func Operators() []T { return operatorList }
 
-// Types lists all the type types
-func Types() []T { return typeList }
-
 func makeList(from, to T) []T {
 	ret := make([]T, 0, to-from-1)
 	for i := from + 1; i < to; i++ {
@@ -20,5 +17,4 @@ func makeList(from, to T) []T {
 var (
 	keywordList  = makeList(keywordBegin, keywordEnd)
 	operatorList = makeList(operatorBegin, operatorEnd)
-	typeList     = makeList(typeBegin, typeEnd)
 )
