@@ -21,7 +21,19 @@ func (g *Gen) synError(pos *tok.Token, op string) {
 	g.errors = append(g.errors, e)
 }
 
-func parseLabel(arg *ast.Arg) (lab string, valid bool) {
+func (g *Gen) findSym(s string) (fill uint32, found bool) {
+	if target := g.varMap[s]; target != nil {
+		fill = target.start
+	} else if target := g.funcMap[s]; target != nil {
+		fill = target.start
+	} else {
+		return
+	}
+
+	return fill, true
+}
+
+func parseSym(arg *ast.Arg) (s string, valid bool) {
 	if arg.Im != nil {
 		return
 	}
@@ -55,6 +67,21 @@ func parseReg(arg *ast.Arg) (reg uint8, valid bool) {
 	}
 
 	return uint8(i), true
+}
+
+func parseSymImm(arg *ast.Arg) (s string, imm int64, valid bool) {
+	imm, valid = parseImm(arg)
+	if valid {
+		return
+	}
+
+	s, valid = parseSym(arg)
+	if valid {
+		imm = 0
+		return
+	}
+
+	return "", 0, false
 }
 
 func parseImm(arg *ast.Arg) (imm int64, valid bool) {
@@ -173,7 +200,7 @@ func (g *Gen) lineGen(f *funcTask, index int, task *lineTask) {
 			g.errorFmt(t, op, "<label>")
 			return
 		}
-		lab, valid := parseLabel(args[0])
+		lab, valid := parseSym(args[0])
 		if !valid {
 			g.invalidArg(t, op, 0, "label")
 			return
@@ -231,7 +258,7 @@ func (g *Gen) lineGen(f *funcTask, index int, task *lineTask) {
 			g.invalidArg(t, op, 1, "reg")
 			return
 		}
-		lab, valid := parseLabel(args[2])
+		lab, valid := parseSym(args[2])
 		if !valid {
 			g.invalidArg(t, op, 2, "label")
 			return
@@ -347,18 +374,28 @@ func (g *Gen) lineGen(f *funcTask, index int, task *lineTask) {
 			g.invalidArg(t, op, 1, "reg")
 			return
 		}
-		// TODO: allow using constant ident here
-		im, valid := parseImm(args[2])
+
+		s, im, valid := parseSymImm(args[2])
 		if !valid {
 			g.invalidArg(t, op, 2, "immediate")
 			return
 		}
-		if !imuInRange(im) {
-			g.errorf(t, "unsigned immediate out of range", op)
-			return
-		}
 
 		imu := uint16(im)
+		if s == "" {
+			if !imuInRange(im) {
+				g.errorf(t, "unsigned immediate out of range", op)
+				return
+			}
+		} else {
+			fill, found := g.findSym(s)
+			if !found {
+				g.errorf(t, "symbol %q not found", s)
+				return
+			}
+			imu = uint16(fill)
+		}
+
 		line.Inst = inst.Iinst(inst.OpCode(op), rs, rt, imu)
 
 	case "addi", "slti":
@@ -377,18 +414,29 @@ func (g *Gen) lineGen(f *funcTask, index int, task *lineTask) {
 			g.invalidArg(t, op, 1, "reg")
 			return
 		}
-		// TODO: allow using constant ident here
-		im, valid := parseImm(args[2])
+
+		s, im, valid := parseSymImm(args[2])
 		if !valid {
-			g.invalidArg(t, op, 2, "immediate")
-			return
-		}
-		if !imsInRange(im) {
-			g.errorf(t, "signed immediate out of range", op)
+			g.invalidArg(t, op, 2, "immediate or symbol")
 			return
 		}
 
 		ims := uint16(int16(im))
+		if s == "" {
+			if !imsInRange(im) {
+				g.errorf(t, "signed immediate out of range", op)
+				return
+			}
+		} else {
+			fill, found := g.findSym(s)
+			if !found {
+				g.errorf(t, "symbol %q not found", s)
+				return
+			}
+
+			ims = uint16(fill)
+		}
+
 		line.Inst = inst.Iinst(inst.OpCode(op), rs, rt, ims)
 
 	case "lui":
@@ -403,18 +451,28 @@ func (g *Gen) lineGen(f *funcTask, index int, task *lineTask) {
 			return
 		}
 
-		// TODO: allow using constant ident here
-		im, valid := parseImm(args[1])
+		s, im, valid := parseSymImm(args[1])
 		if !valid {
-			g.invalidArg(t, op, 1, "immediate")
+			g.invalidArg(t, op, 1, "immediate or symbol")
 			return
 		}
-		if !imuInRange(im) {
-			g.errorf(t, "unsigned immediate out of range", op)
-			return
+		imu := uint16(im)
+
+		if s == "" {
+			if !imuInRange(im) {
+				g.errorf(t, "unsigned immediate out of range", op)
+				return
+			}
+		} else {
+			fill, found := g.findSym(s)
+			if !found {
+				g.errorf(t, "symbol %q not found", s)
+				return
+			}
+
+			imu = uint16(fill >> 16)
 		}
 
-		imu := uint16(im)
 		line.Inst = inst.Iinst(inst.OpCode(op), 0, rt, imu)
 
 	case "lw", "lu", "lhu", "lb", "lbu", "sw", "sh", "sb":
@@ -443,3 +501,5 @@ func (g *Gen) lineGen(f *funcTask, index int, task *lineTask) {
 		g.errorf(t, "unknown instruction op name %q", op)
 	}
 }
+
+

@@ -1,8 +1,8 @@
 var msg = "Hello, world!\n\x00"
 
 func main {
-    lui $1, 0x8000 // msg
-    addi $1, $1, 0 // msg
+    lui $1, msg
+    ori $1, $1, msg
 loop:
     lbu $2, ($1)  // load byte
     beq $2, $0, end     // +5
