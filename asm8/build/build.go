@@ -92,9 +92,11 @@ func (b *Build) WriteImage(out io.Writer) error {
 		return e
 	}
 
-	e = w.Write(mem.SegHeap, dataBuf.Bytes())
-	if e != nil {
-		return e
+	if dataBuf.Len() > 0 {
+		e = w.Write(mem.SegHeap, dataBuf.Bytes())
+		if e != nil {
+			return e
+		}
 	}
 
 	return nil
