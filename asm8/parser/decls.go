@@ -132,23 +132,23 @@ func (p *Parser) parseVarType(v *ast.Var) bool {
 	defer p.pop()
 
 	if p.accept(tt.Lbrack) {
+		v.IsArray = true
 		if p.accept(tt.Int) {
 			v.SizeToken = p.last()
-		} else {
-			v.Size = 0 // sizeless, auto determined
 		}
 
 		if !p.expect(tt.Rbrack) {
 			return false
 		}
-	} else {
-		v.Size = 1
 	}
 
-	if !p.accept(tt.Ident) {
+	if p.accept(tt.Ident) {
+		t := p.last()
+		v.TypeToken = t
+		v.Type = t.Lit
+	} else if v.IsArray {
 		return false
 	}
-	v.Type = p.last().Lit
 
 	return true
 }
@@ -194,7 +194,7 @@ func (p *Parser) parseVarValue(v *ast.Var) bool {
 	return true
 }
 
-// var-ident [ "[" [ int ] "]" ] type-ident = var-init
+// var-ident [ "[" [ int ] "]" ] [ type-ident ] = var-init
 func (p *Parser) parseVarSpec() *ast.Var {
 	p.push("var-spec")
 	defer p.pop()
@@ -212,8 +212,10 @@ func (p *Parser) parseVarSpec() *ast.Var {
 	ret.Name = t.Lit
 	ret.NameToken = t
 
-	if !p.parseVarType(ret) {
-		return err()
+	if p.ahead(tt.Lbrack) || p.ahead(tt.Ident) {
+		if !p.parseVarType(ret) {
+			return err()
+		}
 	}
 
 	if p.accept(tt.Assign) {

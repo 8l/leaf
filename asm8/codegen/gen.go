@@ -8,6 +8,7 @@ import (
 	"e8vm.net/e8/mem"
 	"e8vm.net/leaf/asm8/ast"
 	"e8vm.net/leaf/asm8/build"
+	"e8vm.net/leaf/asm8/lexer/tt"
 	"e8vm.net/leaf/tools/comperr"
 	"e8vm.net/leaf/tools/tok"
 )
@@ -96,9 +97,83 @@ func (g *Gen) declare(d ast.Decl) {
 }
 
 func (g *Gen) varDecl(d *ast.Var) {
-	if d.Type == "str" {
-
+	if d.IsArray {
+		g.arrayVarDecl(d)
+	} else {
+		g.simpleVarDecl(d)
 	}
+}
+
+func (g *Gen) parseAutoVarType(d *ast.Var) string {
+	if d.InitValue != nil {
+		if d.InitValue.Is(tt.String) {
+			return "str"
+		} else if d.InitValue.Is(tt.Int) {
+			return "i32"
+		} else if d.InitValue.Is(tt.Float) {
+			return "f64"
+		} else if d.InitValue.Is(tt.Char) {
+			return "i8"
+		}
+
+		g.errorf(d.InitValue, "failed on detecting var type")
+		return ""
+	} else if d.InitValues != nil {
+		if len(d.InitValues) == 0 {
+			// empty slice
+			return "i32"
+		}
+		first := d.InitValues[0]
+		if first.Is(tt.Int) {
+			return "i32"
+		} else if first.Is(tt.Float) {
+			return "f64"
+		} else if first.Is(tt.Char) {
+			return "i8"
+		}
+
+		g.errorf(first, "failed on detecting var type in array")
+		return ""
+	}
+
+	return "i32" // no value, use i32 for default
+}
+
+func (g *Gen) parseVarType(d *ast.Var) string {
+	if d.TypeToken == nil {
+		// type is missing; auto-detect the var type
+		return g.parseAutoVarType(d)
+	}
+
+	switch d.Type {
+	case "string":
+		return "str"
+	case "int", "int32", "i32":
+		return "i32"
+	case "uint", "uint32", "u32":
+		return "u32"
+	case "uint8", "byte", "u8":
+		return "u8"
+	case "int8", "char", "i8":
+		return "i8"
+	case "float", "float64", "f64":
+		return "f64"
+	default:
+		g.errorf(d.TypeToken, "unknown type %q", d.Type)
+		return ""
+	}
+}
+
+func (g *Gen) simpleVarDecl(d *ast.Var) {
+	typ := g.parseVarType(d)
+	if typ == "" {
+		return
+	}
+
+	panic("todo")
+}
+
+func (g *Gen) arrayVarDecl(d *ast.Var) {
 	panic("todo")
 }
 

@@ -24,14 +24,17 @@ type Const struct {
 
 // Var defines a memory segment.
 type Var struct {
-	Name string
-	Size int // 0 for auto, 1 for single
-	Type string
+	Name    string
+	Size    int // 0 for auto, 1 for single
+	Type    string
+	IsArray bool
+
+	NameToken *tok.Token
+	SizeToken *tok.Token
+	TypeToken *tok.Token
 
 	InitValues []*tok.Token
 	InitValue  *tok.Token
-	NameToken  *tok.Token
-	SizeToken  *tok.Token
 }
 
 // Func defines a code segment.
