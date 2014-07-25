@@ -501,5 +501,3 @@ func (g *Gen) lineGen(f *funcTask, index int, task *lineTask) {
 		g.errorf(t, "unknown instruction op name %q", op)
 	}
 }
-
-
