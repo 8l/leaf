@@ -1,6 +1,8 @@
 package codegen
 
 import (
+	"math"
+
 	"e8vm.net/e8/mem"
 	"e8vm.net/leaf/asm8/ast"
 	"e8vm.net/leaf/asm8/build"
@@ -140,8 +142,61 @@ func (g *Gen) newVar(v *ast.Var) *build.Var {
 	return ret
 }
 
-func (g *Gen) declIntVar(v *ast.Var, align uint32, signed bool) {
-	panic("todo")
+func (g *Gen) declIntVar(v *ast.Var, unit int, signed bool) {
+	if v.IsArray {
+		// var count = 1
+		panic("todo")
+		return
+	}
+
+	nv := g.newVar(v)
+	value := int64(0)
+	nv.Align(uint32(unit))
+
+	if v.InitValue != nil {
+		var e error
+		value, e = parseInt(v.InitValue.Lit)
+		if e != nil {
+			g.errorf(v.InitValue, "invalid init integer value")
+			return
+		}
+	}
+
+	switch {
+	case unit == 1 && signed:
+		if value >= math.MinInt8 && value <= math.MaxInt8 {
+			nv.WriteByte(uint8(value))
+		} else {
+			g.errorf(v.InitValue, "uint8 init value out of range")
+		}
+	case unit == 1 && !signed:
+		if value >= 0 && value <= math.MaxUint8 {
+			nv.WriteByte(uint8(int8(value)))
+		} else {
+			g.errorf(v.InitValue, "int8 init value out of range")
+		}
+	case unit == 4 && signed:
+		if value >= math.MinInt32 && value <= math.MaxInt32 {
+			nv.WriteByte(uint8(value))
+			nv.WriteByte(uint8(value >> 8))
+			nv.WriteByte(uint8(value >> 16))
+			nv.WriteByte(uint8(value >> 32))
+		} else {
+			g.errorf(v.InitValue, "int32 init value out of range")
+		}
+	case unit == 4 && !signed:
+		if value >= 0 && value <= math.MaxUint32 {
+			v := uint32(int32(value))
+			nv.WriteByte(uint8(v))
+			nv.WriteByte(uint8(v >> 8))
+			nv.WriteByte(uint8(v >> 16))
+			nv.WriteByte(uint8(v >> 32))
+		} else {
+			g.errorf(v.InitValue, "uint32 init value out of range")
+		}
+	default:
+		panic("bug")
+	}
 }
 
 func (g *Gen) declFloatVar(v *ast.Var) {

@@ -1,4 +1,4 @@
-var msg = "Hello, world\n\x00"
+var msg = "Hello, world!\n\x00"
 
 func main {
     lui $1, 0x8000 // msg

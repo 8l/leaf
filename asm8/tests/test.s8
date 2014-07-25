@@ -1,11 +1,19 @@
-func main {
-start:
-    j main
-    j start
-some:
-    bne $0, $1, some // this 
-end:
+var msg = "Helloworld\n\x00"
 
+func main {
+    lui $1, 0x8000 // msg
+    addi $1, $1, 0 // msg
+loop:
+    lbu $2, ($1)  // load byte
+    beq $2, $0, end     // +5
+wait:
+    lbu $3, 9           // is output ready?
+    bne $3, $0, wait    // -2
+    sb $2, 9            // output byte
+    addi $1, $1, 1      // update counter
+    j loop              // -7
+end:
+    sb $0, 0x8($0)
 }
 
-var hello = "main\x000"
+var a = 0x3748

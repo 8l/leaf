@@ -38,6 +38,11 @@ func (v *Var) Align(a uint32) {
 // AlignStart calculates the start address of the segment
 // by advancing the address.
 func (v *Var) AlignStart(start uint32) uint32 {
+	if v.align == 0 {
+		v.pad = 0
+		return start
+	}
+
 	res := start % v.align
 	if res == 0 {
 		v.pad = 0

@@ -59,6 +59,10 @@ func (g *Gen) Gen() []error {
 	if len(g.errors) > 0 {
 		return g.errors
 	}
+	g.layoutVars()
+	if len(g.errors) > 0 {
+		return g.errors
+	}
 
 	for _, v := range g.vars {
 		g.genVar(v)
