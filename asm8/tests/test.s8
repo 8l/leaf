@@ -7,3 +7,5 @@ some:
 end:
 
 }
+
+var hello = "main\x000"

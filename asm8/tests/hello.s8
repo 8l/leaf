@@ -1,10 +1,10 @@
-// const msg str = "Hello, world\n"
+var msg = "Hello, world\n\x00"
 
 func main {
-    add $1, $0, $0      // init counter
+    lui $1, 0x8000 // msg
+    addi $1, $1, 0 // msg
 loop:
-    lbu $2, 0x1000($1)  // load byte
-    // lbu $2, msg($1)  // load byte
+    lbu $2, ($1)  // load byte
     beq $2, $0, end     // +5
 wait:
     lbu $3, 9           // is output ready?

@@ -14,10 +14,12 @@ type Func struct {
 	labels map[string]*label
 }
 
-func newFunc(name string) *Func {
+func newFunc(name string, pos *tok.Token) *Func {
 	ret := new(Func)
 	ret.name = name
+	ret.pos = pos
 	ret.labels = make(map[string]*label)
+
 	return ret
 }
 

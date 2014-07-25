@@ -10,3 +10,18 @@ const (
 	SymConst
 	SymVar
 )
+
+func (t SymType) String() string {
+	switch t {
+	case SymNone:
+		return "<none>"
+	case SymFunc:
+		return "function"
+	case SymVar:
+		return "variable"
+	case SymConst:
+		return "const"
+	}
+
+	return "<unknown>"
+}

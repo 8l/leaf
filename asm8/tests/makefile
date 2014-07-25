@@ -1,4 +1,4 @@
-f=fabo.s8
+f=hello.s8
 
 all:
 	@ cat $f

@@ -14,12 +14,16 @@ import (
 type Build struct {
 	funcs   []*Func
 	funcMap map[string]*Func
+
+	vars   []*Var
+	varMap map[string]*Var
 }
 
 // NewBuild creates a new build.
 func NewBuild() *Build {
 	ret := new(Build)
 	ret.funcMap = make(map[string]*Func)
+	ret.varMap = make(map[string]*Var)
 	return ret
 }
 
@@ -30,10 +34,24 @@ func (b *Build) NewFunc(name string, pos *tok.Token) *Func {
 		panic("already defined")
 	}
 
-	ret := newFunc(name)
+	ret := newFunc(name, pos)
 
 	b.funcs = append(b.funcs, ret)
 	b.funcMap[name] = ret
+
+	return ret
+}
+
+// NewVar creates a new variable (data segment) in the build.
+// If the variable name is already defined, it will panic.
+func (b *Build) NewVar(name string, pos *tok.Token) *Var {
+	if b.varMap[name] != nil {
+		panic("already defined")
+	}
+
+	ret := newVar(name, pos)
+	b.vars = append(b.vars, ret)
+	b.varMap[name] = ret
 
 	return ret
 }
@@ -47,6 +65,11 @@ func (b *Build) Find(name string) (*tok.Token, SymType) {
 		return f.pos, SymFunc
 	}
 
+	v := b.varMap[name]
+	if v != nil {
+		return v.pos, SymVar
+	}
+
 	return nil, SymNone
 }
 
@@ -58,8 +81,18 @@ func (b *Build) WriteImage(out io.Writer) error {
 		f.emit(codeBuf)
 	}
 
+	dataBuf := new(bytes.Buffer)
+	for _, v := range b.vars {
+		v.emit(dataBuf)
+	}
+
 	w := img.NewWriter(out)
 	e := w.Write(mem.SegCode, codeBuf.Bytes())
+	if e != nil {
+		return e
+	}
+
+	e = w.Write(mem.SegHeap, dataBuf.Bytes())
 	if e != nil {
 		return e
 	}
