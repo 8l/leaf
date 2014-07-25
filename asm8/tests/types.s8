@@ -1,5 +1,6 @@
 var b []int = { 3, 4, 5, 6, 7 }
 var a string = "hello"
+var _a = "auto string"
 var c int = 373
 var y
 var (

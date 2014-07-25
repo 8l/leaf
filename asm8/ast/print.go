@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"reflect"
 
-	"e8vm.net/leaf/asm8/lexer/tt"
 	"e8vm.net/leaf/tools/prt"
 )
 
@@ -46,18 +45,31 @@ func Print(p prt.Iface, n interface{}) {
 		}
 
 	case *Var:
-		if n.InitValue != nil && n.InitValue.Type.Code() == tt.String.Code() {
-			p.Printf("+ var: %s %s = %s", n.Name, n.Type, n.InitValue.Lit)
-		} else if !n.IsArray {
-			p.Printf("+ var: %s %s", n.Name, n.Type)
-		} else if n.Size == -1 {
-			p.Printf("+ var: %s []%s", n.Name, n.Type)
-		} else {
-			p.Printf("+ var: %s [%d]%s", n.Name, n.Size, n.Type)
-		}
+		p.Print(varString(n))
 	default:
 		p.Printf("? %s: %s", reflect.TypeOf(n), n)
 	}
+}
+
+func varString(v *Var) string {
+	ret := new(bytes.Buffer)
+	fmt.Fprintf(ret, "+ var: %s", v.Name)
+	if v.TypeToken != nil {
+		if !v.IsArray {
+			fmt.Fprintf(ret, " %s", v.Type)
+		} else if v.SizeToken == nil {
+			fmt.Fprintf(ret, " []%s", v.Type)
+		} else {
+			fmt.Fprintf(ret, " [%s]%s", v.SizeToken.Lit, v.Type)
+		}
+	}
+	if v.InitValue != nil {
+		fmt.Fprintf(ret, " = %s", v.InitValue.Lit)
+	} else if v.InitValues != nil {
+		fmt.Fprintf(ret, " = {...}")
+	}
+
+	return ret.String()
 }
 
 // String prints an instruction line using the printer.
